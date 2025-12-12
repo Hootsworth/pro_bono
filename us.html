@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Learn about Pro Bono - Our mission to make quality education accessible to everyone.">
+    <title>About Us | Pro Bono</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .about-hero {
+            background: var(--accent-yellow);
+            border-bottom: var(--border-extra);
+            padding: var(--space-2xl) 0;
+            text-align: center;
+        }
+
+        .about-hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: var(--space-md);
+            letter-spacing: -0.02em;
+        }
+
+        .about-hero p {
+            font-size: 1.25rem;
+            max-width: 600px;
+            margin: 0 auto;
+            color: var(--text-secondary);
+        }
+
+        .mission-section {
+            padding: var(--space-2xl) 0;
+        }
+
+        .mission-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: var(--space-lg);
+        }
+
+        .mission-card {
+            background: var(--bg-primary);
+            border: var(--border-extra);
+            box-shadow: var(--shadow-md);
+            padding: var(--space-lg);
+            transition: all 0.25s ease;
+        }
+
+        .mission-card:hover {
+            transform: translate(-6px, -6px);
+            box-shadow: 10px 10px 0 var(--border-color);
+        }
+
+        .mission-icon {
+            width: 64px;
+            height: 64px;
+            border: var(--border-thick);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: var(--space-md);
+        }
+
+        .mission-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: var(--space-sm);
+        }
+
+        .mission-card p {
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .story-section {
+            background: var(--bg-secondary);
+            border-top: var(--border-extra);
+            border-bottom: var(--border-extra);
+            padding: var(--space-2xl) 0;
+        }
+
+        .story-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .story-content h2 {
+            font-size: 2.5rem;
+            margin-bottom: var(--space-lg);
+            text-align: center;
+        }
+
+        .story-content p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: var(--space-md);
+            color: var(--text-secondary);
+        }
+
+        .story-content blockquote {
+            background: var(--accent-yellow);
+            border: var(--border-thick);
+            padding: var(--space-lg);
+            margin: var(--space-lg) 0;
+            font-size: 1.25rem;
+            font-style: italic;
+            position: relative;
+        }
+
+        .story-content blockquote::before {
+            content: '"';
+            font-size: 4rem;
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            font-family: Georgia, serif;
+            color: var(--text-primary);
+            opacity: 0.3;
+        }
+
+        .values-section {
+            padding: var(--space-2xl) 0;
+        }
+
+        .values-section h2 {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: var(--space-lg);
+        }
+
+        .values-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-md);
+            justify-content: center;
+        }
+
+        .value-item {
+            background: var(--bg-primary);
+            border: var(--border-thick);
+            padding: var(--space-md) var(--space-lg);
+            font-family: var(--font-mono);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            transition: all 0.2s ease;
+        }
+
+        .value-item:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .value-item:nth-child(1) {
+            border-color: var(--accent-yellow);
+        }
+
+        .value-item:nth-child(2) {
+            border-color: var(--accent-pink);
+        }
+
+        .value-item:nth-child(3) {
+            border-color: var(--accent-green);
+        }
+
+        .value-item:nth-child(4) {
+            border-color: var(--accent-purple);
+        }
+
+        .value-item:nth-child(5) {
+            border-color: var(--accent-cyan);
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg, var(--accent-yellow) 0%, #FFE872 100%);
+            border-top: var(--border-extra);
+            padding: var(--space-2xl) 0;
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            font-size: 2.5rem;
+            margin-bottom: var(--space-md);
+        }
+
+        .cta-section p {
+            font-size: 1.1rem;
+            margin-bottom: var(--space-lg);
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: var(--space-md);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .about-hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .story-content h2,
+            .values-section h2,
+            .cta-section h2 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">PB</div>
+                <span>Pro Bono</span>
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Courses</a></li>
+                    <li><a href="calendar.html">Calendar</a></li>
+                    <li><a href="us.html" style="background: var(--text-primary); color: var(--bg-primary);">Us</a></li>
+                    <li><a href="admin.html">Admin</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="about-hero">
+        <div class="container">
+            <h1>We Are <span style="text-decoration: underline; text-decoration-color: var(--text-primary);">Pro
+                    Bono</span></h1>
+            <p>On a mission to democratize education and make quality learning resources accessible to every student,
+                everywhere.</p>
+        </div>
+    </section>
+
+    <!-- Mission Cards -->
+    <section class="mission-section">
+        <div class="container">
+            <div class="mission-grid">
+                <div class="mission-card">
+                    <div class="mission-icon" style="background: var(--accent-yellow);">🎯</div>
+                    <h3>Our Mission</h3>
+                    <p>To break down barriers to education by curating and sharing high-quality academic resources —
+                        video lectures, question papers, flashcards, and more — completely free of charge.</p>
+                </div>
+                <div class="mission-card">
+                    <div class="mission-icon" style="background: var(--accent-pink);">❤️</div>
+                    <h3>Why We Exist</h3>
+                    <p>Education shouldn't be a privilege. We saw students struggling to find good study materials,
+                        paying for resources that should be free. So we built Pro Bono — Latin for "for the public
+                        good."</p>
+                </div>
+                <div class="mission-card">
+                    <div class="mission-icon" style="background: var(--accent-green);">🌱</div>
+                    <h3>What We Believe</h3>
+                    <p>Every student deserves access to the same quality of education, regardless of their background or
+                        financial situation. Knowledge grows when shared — and that's exactly what we do.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Story Section -->
+    <section class="story-section">
+        <div class="container">
+            <div class="story-content">
+                <h2>📖 Our Story</h2>
+                <p>Pro Bono started as a simple idea: what if we could gather all the scattered study resources — the
+                    lecture videos, the previous year papers, the problem sets — and put them in one place, freely
+                    accessible to everyone?</p>
+
+                <p>We've watched classmates struggle to find notes. We've seen students pay for materials that should be
+                    available to all. We've experienced the frustration of fragmented resources ourselves.</p>
+
+                <blockquote>
+                    Education is the most powerful weapon which you can use to change the world.
+                    <footer style="font-style: normal; font-size: 0.9rem; margin-top: 10px;">— Nelson Mandela</footer>
+                </blockquote>
+
+                <p>That's why Pro Bono exists. Not for profit, not for fame — but for the simple belief that when one
+                    student succeeds, we all succeed. We're building a community of learners who help each other grow.
+                </p>
+
+                <p>Whether you're preparing for exams, catching up on lectures, or simply expanding your knowledge — Pro
+                    Bono is here for you. Always free. Always accessible.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Values Section -->
+    <section class="values-section">
+        <div class="container">
+            <h2>🌟 What We Stand For</h2>
+            <div class="values-list">
+                <div class="value-item">✨ Accessibility First</div>
+                <div class="value-item">🤝 Community Driven</div>
+                <div class="value-item">📚 Quality Content</div>
+                <div class="value-item">🔓 Always Free</div>
+                <div class="value-item">💡 Student Empowerment</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2>Join the Movement 🚀</h2>
+            <p>Want to contribute? Help us grow this library of knowledge by becoming an Admin Lite.</p>
+            <div class="cta-buttons">
+                <a href="index.html" class="btn btn-secondary">Explore Courses</a>
+                <a href="apply-admin.html" class="btn btn-primary">Become a Contributor</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="border-top: 4px solid #1A1A1A; padding: 2rem 0; background: var(--bg-secondary);">
+        <div class="container"
+            style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <div class="logo-icon" style="width: 32px; height: 32px; font-size: 1rem;">PB</div>
+                <span>Pro Bono</span>
+            </div>
+            <p style="font-family: var(--font-mono); font-size: 0.9rem;">© 2025 Pro Bono • Built with Neo Brutalism</p>
+        </div>
+    </footer>
+</body>
+
+</html>

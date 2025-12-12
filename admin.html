@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Admin login for Pro Bono dashboard">
+    <title>Admin Login | Pro Bono</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">PB</div>
+                <span>Pro Bono</span>
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Courses</a></li>
+                    <li><a href="admin.html"
+                            style="background: var(--text-primary); color: var(--bg-primary);">Admin</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Login Form -->
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-icon">🔐</div>
+                <h2>Admin Login</h2>
+                <p class="mt-sm">Enter your email and password to access the dashboard</p>
+            </div>
+
+            <div class="error-message" id="errorMessage">
+                ⚠️ Invalid email or password
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label" for="email">Email</label>
+                    <input type="email" id="email" name="email" class="form-input" placeholder="Enter admin email"
+                        autocomplete="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" id="password" name="password" class="form-input" placeholder="Enter password"
+                        autocomplete="current-password" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="loginBtn"
+                    style="width: 100%; justify-content: center;">
+                    Login →
+                </button>
+            </form>
+
+            <p class="mt-md text-center" style="font-size: 0.9rem; color: var(--text-secondary);">
+                <a href="index.html" style="text-decoration: underline;">← Back to Courses</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if already authenticated
+            onAuthStateChanged((user) => {
+                if (user) {
+                    window.location.href = 'admin-dashboard.html';
+                }
+            });
+
+            // Handle login form
+            const loginForm = document.getElementById('loginForm');
+            const errorMessage = document.getElementById('errorMessage');
+            const loginBtn = document.getElementById('loginBtn');
+
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value;
+
+                // Disable button during login
+                loginBtn.disabled = true;
+                loginBtn.textContent = 'Logging in...';
+
+                const result = await loginWithEmail(email, password);
+
+                if (result.success) {
+                    window.location.href = 'admin-dashboard.html';
+                } else {
+                    errorMessage.textContent = `⚠️ ${result.error}`;
+                    errorMessage.classList.add('show');
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Login →';
+
+                    // Hide error after 5 seconds
+                    setTimeout(() => {
+                        errorMessage.classList.remove('show');
+                    }, 5000);
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

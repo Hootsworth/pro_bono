@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Academic Calendar and Timetable for your university">
+    <title>Calendar | Pro Bono</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .calendar-header {
+            background: var(--accent-yellow);
+            border-bottom: var(--border-extra);
+            padding: var(--space-lg) 0;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: var(--space-md);
+            flex-wrap: wrap;
+            align-items: center;
+            margin-top: var(--space-md);
+        }
+
+        .filter-select {
+            padding: 0.75rem 1rem;
+            border: var(--border-thick);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            background: var(--bg-primary);
+            min-width: 180px;
+        }
+
+        .view-tabs {
+            display: flex;
+            gap: 0;
+            border: var(--border-thick);
+            background: var(--bg-primary);
+        }
+
+        .view-tab {
+            padding: 0.75rem 1.5rem;
+            font-family: var(--font-mono);
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            background: var(--bg-primary);
+            transition: all 0.15s ease;
+        }
+
+        .view-tab:not(:last-child) {
+            border-right: var(--border-thick);
+        }
+
+        .view-tab.active {
+            background: var(--text-primary);
+            color: var(--accent-yellow);
+        }
+
+        .view-tab:hover:not(.active) {
+            background: var(--bg-secondary);
+        }
+
+        /* Timetable View Styles */
+        .timetable-container {
+            overflow-x: auto;
+            padding: var(--space-lg) 0;
+        }
+
+        .timetable {
+            width: 100%;
+            min-width: 800px;
+            border-collapse: collapse;
+            border: var(--border-extra);
+            background: var(--bg-primary);
+        }
+
+        .timetable th,
+        .timetable td {
+            border: var(--border-thin);
+            padding: 0.75rem;
+            text-align: center;
+            vertical-align: top;
+            min-width: 120px;
+        }
+
+        .timetable th {
+            background: var(--accent-yellow);
+            font-family: var(--font-mono);
+            font-weight: 700;
+        }
+
+        .timetable .time-col {
+            background: var(--bg-secondary);
+            font-family: var(--font-mono);
+            font-weight: 600;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+
+        .class-cell {
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            padding: 0.5rem;
+            margin: 2px;
+        }
+
+        .class-cell .subject {
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .class-cell .room {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .class-cell .credits {
+            font-size: 0.7rem;
+            background: var(--accent-cyan);
+            display: inline-block;
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            margin-top: 0.25rem;
+        }
+
+        /* Calendar View Styles */
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-md) 0;
+        }
+
+        .calendar-nav h2 {
+            font-size: 1.5rem;
+        }
+
+        .nav-btn {
+            width: 44px;
+            height: 44px;
+            border: var(--border-thick);
+            background: var(--bg-primary);
+            font-size: 1.25rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+
+        .nav-btn:hover {
+            background: var(--accent-yellow);
+            transform: translate(-2px, -2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            border: var(--border-extra);
+            background: var(--bg-primary);
+        }
+
+        .calendar-day-header {
+            padding: 0.75rem;
+            text-align: center;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            background: var(--accent-yellow);
+            border-bottom: var(--border-thick);
+        }
+
+        .calendar-day {
+            min-height: 100px;
+            padding: 0.5rem;
+            border: 1px solid var(--bg-secondary);
+            position: relative;
+        }
+
+        .calendar-day.other-month {
+            background: var(--bg-secondary);
+            opacity: 0.5;
+        }
+
+        .calendar-day.today {
+            background: #FFFACD;
+        }
+
+        .day-number {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .day-event {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            margin-bottom: 0.25rem;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        .day-event:hover {
+            transform: scale(1.02);
+        }
+
+        /* Event Type Colors */
+        .event-internal {
+            background: #FFE4EC;
+            border-color: #FF6B9D;
+        }
+
+        .event-final {
+            background: #FFE8E8;
+            border-color: #FF6B6B;
+        }
+
+        .event-holiday {
+            background: #E8F5E9;
+            border-color: #6BCB77;
+        }
+
+        .event-event {
+            background: #E0F7FA;
+            border-color: #4ECDC4;
+        }
+
+        .event-deadline {
+            background: #FFF9E0;
+            border-color: #FFD93D;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-md);
+            padding: var(--space-md);
+            background: var(--bg-secondary);
+            border: var(--border-thick);
+            margin-top: var(--space-md);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 3px;
+        }
+
+        /* Subject Info Cards */
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: var(--space-md);
+            margin-top: var(--space-lg);
+        }
+
+        .subject-card {
+            background: var(--bg-primary);
+            border: var(--border-thick);
+            padding: var(--space-md);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .subject-card h4 {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .subject-card .credits-badge {
+            background: var(--accent-cyan);
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            border-radius: 3px;
+        }
+
+        .subject-card .portions {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .important-topics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .topic-tag {
+            background: var(--accent-yellow);
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            border: 2px solid var(--border-color);
+        }
+
+        /* Empty States */
+        .empty-state {
+            text-align: center;
+            padding: var(--space-2xl);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: var(--space-md);
+        }
+
+        @media (max-width: 768px) {
+            .header-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .calendar-day {
+                min-height: 60px;
+            }
+
+            .day-event {
+                font-size: 0.65rem;
+                padding: 0.15rem 0.25rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">PB</div>
+                <span>Pro Bono</span>
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Courses</a></li>
+                    <li><a href="calendar.html"
+                            style="background: var(--text-primary); color: var(--bg-primary);">Calendar</a></li>
+                    <li><a href="us.html">Us</a></li>
+                    <li><a href="admin.html">Admin</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Calendar Header -->
+    <section class="calendar-header">
+        <div class="container">
+            <h1>📅 Academic Calendar</h1>
+            <p class="mt-sm">View your university's timetable and important academic dates</p>
+
+            <div class="header-controls">
+                <select id="universitySelect" class="filter-select">
+                    <option value="">Select University...</option>
+                </select>
+
+                <select id="semesterSelect" class="filter-select">
+                    <option value="">All Semesters</option>
+                    <option value="Sem 1">Semester 1</option>
+                    <option value="Sem 2">Semester 2</option>
+                    <option value="Sem 3">Semester 3</option>
+                    <option value="Sem 4">Semester 4</option>
+                    <option value="Sem 5">Semester 5</option>
+                    <option value="Sem 6">Semester 6</option>
+                    <option value="Sem 7">Semester 7</option>
+                    <option value="Sem 8">Semester 8</option>
+                </select>
+
+                <select id="majorSelect" class="filter-select">
+                    <option value="">All Majors</option>
+                </select>
+
+                <div class="view-tabs">
+                    <button class="view-tab active" data-view="timetable" onclick="switchView('timetable')">📋
+                        Timetable</button>
+                    <button class="view-tab" data-view="calendar" onclick="switchView('calendar')">🗓️ Calendar</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <!-- Loading State -->
+            <div class="empty-state" id="loadingState">
+                <div class="empty-state-icon">⏳</div>
+                <h3>Loading...</h3>
+            </div>
+
+            <!-- Select University Prompt -->
+            <div class="empty-state" id="selectUniversityPrompt" style="display: none;">
+                <div class="empty-state-icon">🏫</div>
+                <h3>Select Your University</h3>
+                <p class="mt-sm">Choose a university from the dropdown above to view its timetable and academic
+                    calendar.</p>
+            </div>
+
+            <!-- No Data State -->
+            <div class="empty-state" id="noDataState" style="display: none;">
+                <div class="empty-state-icon">📭</div>
+                <h3>No Data Available</h3>
+                <p class="mt-sm">There's no timetable or calendar data for this selection yet.</p>
+            </div>
+
+            <!-- Timetable View -->
+            <div id="timetableView" style="display: none;">
+                <div class="timetable-container">
+                    <table class="timetable" id="timetableGrid">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Monday</th>
+                                <th>Tuesday</th>
+                                <th>Wednesday</th>
+                                <th>Thursday</th>
+                                <th>Friday</th>
+                                <th>Saturday</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timetableBody">
+                            <!-- Dynamic content -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Subject Details -->
+                <h3 class="mt-lg">📚 Subject Details</h3>
+                <div class="subjects-grid" id="subjectsGrid">
+                    <!-- Dynamic content -->
+                </div>
+            </div>
+
+            <!-- Calendar View -->
+            <div id="calendarView" style="display: none;">
+                <div class="calendar-nav">
+                    <button class="nav-btn" onclick="changeMonth(-1)">◀</button>
+                    <h2 id="currentMonth">December 2025</h2>
+                    <button class="nav-btn" onclick="changeMonth(1)">▶</button>
+                </div>
+
+                <div class="calendar-grid" id="calendarGrid">
+                    <!-- Day headers -->
+                    <div class="calendar-day-header">Sun</div>
+                    <div class="calendar-day-header">Mon</div>
+                    <div class="calendar-day-header">Tue</div>
+                    <div class="calendar-day-header">Wed</div>
+                    <div class="calendar-day-header">Thu</div>
+                    <div class="calendar-day-header">Fri</div>
+                    <div class="calendar-day-header">Sat</div>
+                    <!-- Days will be populated dynamically -->
+                </div>
+
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color event-internal"></div>
+                        <span>Internal Assessment</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color event-final"></div>
+                        <span>Final Exam</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color event-holiday"></div>
+                        <span>Holiday</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color event-event"></div>
+                        <span>Event</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color event-deadline"></div>
+                        <span>Deadline</span>
+                    </div>
+                </div>
+
+                <!-- Upcoming Events -->
+                <h3 class="mt-lg">📆 Upcoming Events</h3>
+                <div id="upcomingEvents" class="mt-md">
+                    <!-- Dynamic content -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer style="border-top: 4px solid #1A1A1A; padding: 2rem 0; background: var(--bg-secondary);">
+        <div class="container"
+            style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <div class="logo-icon" style="width: 32px; height: 32px; font-size: 1rem;">PB</div>
+                <span>Pro Bono</span>
+            </div>
+            <p style="font-family: var(--font-mono); font-size: 0.9rem;">© 2025 Pro Bono • Built with Neo Brutalism</p>
+        </div>
+    </footer>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="app.js"></script>
+    <script>
+        // State
+        let currentView = 'timetable';
+        let currentMonth = new Date();
+        let cachedTimetables = [];
+        let cachedEvents = [];
+        let cachedMajors = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadUniversities();
+            await loadMajors();
+
+            // Check for saved university
+            const savedUniversity = getSelectedUniversity();
+            if (savedUniversity) {
+                document.getElementById('universitySelect').value = savedUniversity;
+                await loadData();
+            } else {
+                showState('selectUniversity');
+            }
+
+            // Add event listeners
+            document.getElementById('universitySelect').addEventListener('change', onUniversityChange);
+            document.getElementById('semesterSelect').addEventListener('change', loadData);
+            document.getElementById('majorSelect').addEventListener('change', loadData);
+        });
+
+        async function loadUniversities() {
+            const universities = await getUniversitiesAsync();
+            const select = document.getElementById('universitySelect');
+
+            universities.forEach(uni => {
+                const option = document.createElement('option');
+                option.value = uni.id;
+                option.textContent = uni.name;
+                select.appendChild(option);
+            });
+        }
+
+        async function loadMajors() {
+            const majors = await getMajorsAsync();
+            cachedMajors = majors;
+            const select = document.getElementById('majorSelect');
+
+            majors.forEach(major => {
+                const option = document.createElement('option');
+                option.value = major.name;
+                option.textContent = major.name;
+                select.appendChild(option);
+            });
+        }
+
+        async function onUniversityChange() {
+            const universityId = document.getElementById('universitySelect').value;
+            if (universityId) {
+                setSelectedUniversity(universityId);
+                await loadData();
+            } else {
+                showState('selectUniversity');
+            }
+        }
+
+        async function loadData() {
+            const universityId = document.getElementById('universitySelect').value;
+            if (!universityId) {
+                showState('selectUniversity');
+                return;
+            }
+
+            showState('loading');
+
+            const semester = document.getElementById('semesterSelect').value;
+            const major = document.getElementById('majorSelect').value;
+
+            // Load timetables and events
+            cachedTimetables = await getTimetableAsync(universityId, semester || null, major || null);
+            cachedEvents = await getAcademicEventsAsync(universityId);
+
+            if (cachedTimetables.length === 0 && cachedEvents.length === 0) {
+                showState('noData');
+                return;
+            }
+
+            showState('data');
+            if (currentView === 'timetable') {
+                renderTimetable();
+            } else {
+                renderCalendar();
+            }
+        }
+
+        function showState(state) {
+            document.getElementById('loadingState').style.display = state === 'loading' ? 'block' : 'none';
+            document.getElementById('selectUniversityPrompt').style.display = state === 'selectUniversity' ? 'block' : 'none';
+            document.getElementById('noDataState').style.display = state === 'noData' ? 'block' : 'none';
+            document.getElementById('timetableView').style.display = (state === 'data' && currentView === 'timetable') ? 'block' : 'none';
+            document.getElementById('calendarView').style.display = (state === 'data' && currentView === 'calendar') ? 'block' : 'none';
+        }
+
+        function switchView(view) {
+            currentView = view;
+
+            // Update tabs
+            document.querySelectorAll('.view-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.view === view);
+            });
+
+            // Show appropriate view
+            const universityId = document.getElementById('universitySelect').value;
+            if (!universityId) {
+                showState('selectUniversity');
+                return;
+            }
+
+            if (cachedTimetables.length === 0 && cachedEvents.length === 0) {
+                showState('noData');
+                return;
+            }
+
+            showState('data');
+            if (view === 'timetable') {
+                renderTimetable();
+            } else {
+                renderCalendar();
+            }
+        }
+
+        // ===== Timetable Rendering =====
+        function renderTimetable() {
+            const tbody = document.getElementById('timetableBody');
+            const subjectsGrid = document.getElementById('subjectsGrid');
+
+            // Time slots from 8 AM to 6 PM
+            const timeSlots = [
+                '08:00-09:00', '09:00-10:00', '10:00-11:00', '11:00-12:00',
+                '12:00-13:00', '13:00-14:00', '14:00-15:00', '15:00-16:00',
+                '16:00-17:00', '17:00-18:00'
+            ];
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+            // Build schedule map
+            const scheduleMap = {};
+            const allSubjects = [];
+
+            cachedTimetables.forEach(tt => {
+                if (tt.subjects) {
+                    tt.subjects.forEach(subject => {
+                        allSubjects.push(subject);
+                        if (subject.schedule) {
+                            subject.schedule.forEach(slot => {
+                                const key = `${slot.day}_${slot.startTime}`;
+                                if (!scheduleMap[key]) scheduleMap[key] = [];
+                                scheduleMap[key].push({
+                                    ...subject,
+                                    room: slot.room
+                                });
+                            });
+                        }
+                    });
+                }
+            });
+
+            // Render timetable
+            tbody.innerHTML = timeSlots.map(time => {
+                const startTime = time.split('-')[0];
+                return `
+                    <tr>
+                        <td class="time-col">${time}</td>
+                        ${days.map(day => {
+                    const key = `${day}_${startTime}`;
+                    const classes = scheduleMap[key] || [];
+                    return `<td>${classes.map(c => `
+                                <div class="class-cell" style="background: ${getSubjectColor(c.name)};">
+                                    <div class="subject">${escapeHtml(c.name)}</div>
+                                    <div class="room">${escapeHtml(c.room || 'TBA')}</div>
+                                    ${c.credits ? `<span class="credits">${c.credits} Credits</span>` : ''}
+                                </div>
+                            `).join('')}</td>`;
+                }).join('')}
+                    </tr>
+                `;
+            }).join('');
+
+            // Render subject details
+            const uniqueSubjects = [...new Map(allSubjects.map(s => [s.name, s])).values()];
+            subjectsGrid.innerHTML = uniqueSubjects.length > 0 ? uniqueSubjects.map(subject => `
+                <div class="subject-card">
+                    <h4>
+                        ${escapeHtml(subject.name)}
+                        ${subject.credits ? `<span class="credits-badge">${subject.credits} Credits</span>` : ''}
+                    </h4>
+                    ${subject.portions ? `<p class="portions"><strong>Portions:</strong> ${escapeHtml(subject.portions)}</p>` : ''}
+                    ${subject.importantTopics && subject.importantTopics.length > 0 ? `
+                        <div class="important-topics">
+                            <strong>Important:</strong>
+                            ${subject.importantTopics.map(t => `<span class="topic-tag">${escapeHtml(t)}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('') : '<p class="text-muted">No subject details available</p>';
+        }
+
+        function getSubjectColor(name) {
+            const colors = ['#FFE8E8', '#E8F5E9', '#E3F2FD', '#FFF9E0', '#F3E5F5', '#E0F7FA'];
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            return colors[Math.abs(hash) % colors.length];
+        }
+
+        // ===== Calendar Rendering =====
+        function renderCalendar() {
+            updateMonthDisplay();
+            renderCalendarDays();
+            renderUpcomingEvents();
+        }
+
+        function updateMonthDisplay() {
+            const options = { year: 'numeric', month: 'long' };
+            document.getElementById('currentMonth').textContent = currentMonth.toLocaleDateString('en-US', options);
+        }
+
+        function changeMonth(delta) {
+            currentMonth.setMonth(currentMonth.getMonth() + delta);
+            renderCalendar();
+        }
+
+        function renderCalendarDays() {
+            const grid = document.getElementById('calendarGrid');
+
+            // Clear existing days (keep headers)
+            const headers = Array.from(grid.querySelectorAll('.calendar-day-header'));
+            grid.innerHTML = '';
+            headers.forEach(h => grid.appendChild(h));
+
+            const year = currentMonth.getFullYear();
+            const month = currentMonth.getMonth();
+
+            // First day and last day of month
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+
+            // Previous month days
+            const startPadding = firstDay.getDay();
+            const prevMonth = new Date(year, month, 0);
+            for (let i = startPadding - 1; i >= 0; i--) {
+                const day = prevMonth.getDate() - i;
+                grid.appendChild(createDayElement(new Date(year, month - 1, day), true));
+            }
+
+            // Current month days
+            const today = new Date();
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const date = new Date(year, month, day);
+                const isToday = date.toDateString() === today.toDateString();
+                grid.appendChild(createDayElement(date, false, isToday));
+            }
+
+            // Next month days
+            const endPadding = 42 - (startPadding + lastDay.getDate());
+            for (let day = 1; day <= endPadding; day++) {
+                grid.appendChild(createDayElement(new Date(year, month + 1, day), true));
+            }
+        }
+
+        function createDayElement(date, isOtherMonth, isToday = false) {
+            const div = document.createElement('div');
+            div.className = 'calendar-day';
+            if (isOtherMonth) div.classList.add('other-month');
+            if (isToday) div.classList.add('today');
+
+            const dateStr = date.toISOString().split('T')[0];
+            const dayEvents = getEventsForDate(dateStr);
+
+            div.innerHTML = `
+                <div class="day-number">${date.getDate()}</div>
+                ${dayEvents.map(e => `
+                    <div class="day-event event-${e.type}" title="${escapeHtml(e.title)}">
+                        ${escapeHtml(e.title.length > 15 ? e.title.substring(0, 12) + '...' : e.title)}
+                    </div>
+                `).join('')}
+            `;
+
+            return div;
+        }
+
+        function getEventsForDate(dateStr) {
+            return cachedEvents.filter(e => {
+                const start = e.startDate;
+                const end = e.endDate || e.startDate;
+                return dateStr >= start && dateStr <= end;
+            });
+        }
+
+        function renderUpcomingEvents() {
+            const container = document.getElementById('upcomingEvents');
+            const today = new Date().toISOString().split('T')[0];
+
+            const upcoming = cachedEvents
+                .filter(e => e.startDate >= today)
+                .sort((a, b) => a.startDate.localeCompare(b.startDate))
+                .slice(0, 5);
+
+            if (upcoming.length === 0) {
+                container.innerHTML = '<p class="text-muted">No upcoming events</p>';
+                return;
+            }
+
+            container.innerHTML = upcoming.map(e => {
+                const typeInfo = EVENT_TYPES[e.type] || { icon: '📅', label: e.type };
+                return `
+                    <div class="resource-item" style="margin-bottom: 0.5rem;">
+                        <div class="resource-info">
+                            <div class="resource-icon" style="background: ${typeInfo.color};">${typeInfo.icon}</div>
+                            <div>
+                                <strong>${escapeHtml(e.title)}</strong>
+                                <br><small>${formatDateRange(e.startDate, e.endDate)} • ${typeInfo.label}</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function formatDateRange(start, end) {
+            const options = { month: 'short', day: 'numeric' };
+            const startDate = new Date(start + 'T00:00:00');
+            if (!end || start === end) {
+                return startDate.toLocaleDateString('en-US', options);
+            }
+            const endDate = new Date(end + 'T00:00:00');
+            return `${startDate.toLocaleDateString('en-US', options)} - ${endDate.toLocaleDateString('en-US', options)}`;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+
+</html>

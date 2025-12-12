@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Apply for admin access to Pro Bono educational dashboard">
+    <title>Apply for Admin Access | Pro Bono</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23FFD93D' width='100' height='100' rx='10'/><text y='.9em' font-size='80' x='50%' text-anchor='middle'>📚</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .apply-container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: var(--space-xl) var(--space-md);
+        }
+
+        .responsibility-card {
+            background: var(--bg-primary);
+            border: var(--border-extra);
+            padding: var(--space-lg);
+            margin-bottom: var(--space-md);
+            box-shadow: var(--shadow-md);
+        }
+
+        .responsibility-card h3 {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-sm);
+        }
+
+        .responsibility-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            border: var(--border-thick);
+        }
+
+        .responsibility-list {
+            list-style: none;
+            padding-left: var(--space-md);
+        }
+
+        .responsibility-list li {
+            padding: var(--space-xs) 0;
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-sm);
+        }
+
+        .responsibility-list li::before {
+            content: "→";
+            font-weight: bold;
+            color: var(--accent-purple);
+        }
+
+        .apply-form {
+            background: var(--accent-yellow);
+            border: var(--border-extra);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: var(--space-xl);
+            background: var(--accent-green);
+            border: var(--border-extra);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            margin-bottom: var(--space-md);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">PB</div>
+                <span>Pro Bono</span>
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Courses</a></li>
+                    <li><a href="calendar.html">Calendar</a></li>
+                    <li><a href="us.html">Us</a></li>
+                    <li><a href="admin.html">Admin</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="apply-container">
+        <a href="index.html" class="back-link">← Back to Dashboard</a>
+
+        <div class="page-title">
+            <h1>🛡️ Apply for Admin Access</h1>
+            <p class="mt-sm">Help us grow Pro Bono by becoming an Admin Lite contributor.</p>
+        </div>
+
+        <!-- Responsibilities Section -->
+        <div id="responsibilitiesSection">
+            <div class="responsibility-card">
+                <h3>
+                    <span class="responsibility-icon" style="background: var(--accent-purple);">👤</span>
+                    What is an Admin Lite?
+                </h3>
+                <p>Admin Lite contributors help manage educational content within their assigned major. You'll be able
+                    to add courses, videos, question papers, and problem sets for students in your field.</p>
+            </div>
+
+            <div class="responsibility-card">
+                <h3>
+                    <span class="responsibility-icon" style="background: var(--accent-green);">✅</span>
+                    Your Responsibilities
+                </h3>
+                <ul class="responsibility-list">
+                    <li>Add and maintain accurate course information for your major</li>
+                    <li>Upload quality video lectures with proper titles</li>
+                    <li>Keep question papers and problem sets up-to-date</li>
+                    <li>Ensure content follows academic guidelines</li>
+                    <li>Respond to content issues in a timely manner</li>
+                </ul>
+            </div>
+
+            <div class="responsibility-card">
+                <h3>
+                    <span class="responsibility-icon" style="background: var(--accent-pink);">🎯</span>
+                    What You Can Do
+                </h3>
+                <ul class="responsibility-list">
+                    <li>Create new courses within your assigned major</li>
+                    <li>Add YouTube video lectures to courses</li>
+                    <li>Upload Google Drive links for question papers</li>
+                    <li>Add problem sets and practice materials</li>
+                    <li>Edit existing course information in your major</li>
+                </ul>
+            </div>
+
+            <div class="responsibility-card">
+                <h3>
+                    <span class="responsibility-icon" style="background: var(--accent-orange);">⚠️</span>
+                    Important Notes
+                </h3>
+                <ul class="responsibility-list">
+                    <li>You'll be assigned to ONE major based on your expertise</li>
+                    <li>All content must be educational and appropriate</li>
+                    <li>Misuse of admin privileges will result in removal</li>
+                    <li>Super Admin reviews all applications manually</li>
+                </ul>
+            </div>
+
+            <div class="responsibility-card" style="border-color: var(--accent-pink);">
+                <h3>
+                    <span class="responsibility-icon" style="background: var(--accent-pink);">📜</span>
+                    Content Responsibility
+                </h3>
+                <p style="margin-bottom: var(--space-sm);">
+                    By becoming an Admin Lite, you agree to take full responsibility for all content you upload or share
+                    through Pro Bono.
+                </p>
+                <ul class="responsibility-list">
+                    <li>You are solely responsible for ensuring your content does not violate any laws or institutional
+                        policies</li>
+                    <li>Pro Bono does not review content before publishing and cannot be held responsible for
+                        admin-uploaded materials</li>
+                    <li>If content is reported as inappropriate, illegal, or violating institutional rules, your admin
+                        access will be revoked</li>
+                    <li>Any legal consequences arising from shared content remain the responsibility of the uploading
+                        admin</li>
+                </ul>
+                <p style="margin-top: var(--space-sm); font-size: 0.9rem; color: var(--text-secondary);">
+                    <em>We trust our admins to act responsibly and ethically. Let's keep Pro Bono a safe, helpful
+                        resource for everyone! 💙</em>
+                </p>
+            </div>
+
+            <!-- Application Form -->
+            <div class="apply-form" id="applyForm">
+                <h3 class="mb-md">📧 Ready to Apply?</h3>
+                <p class="mb-md">Enter your email below and we'll review your application. You'll be contacted once a
+                    decision is made.</p>
+
+                <form id="applicationForm">
+                    <div class="form-group">
+                        <label class="form-label" for="applicantEmail">Your Email Address *</label>
+                        <input type="email" id="applicantEmail" class="form-input" placeholder="your.email@example.com"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="applicantUniversity">Your University *</label>
+                        <select id="applicantUniversity" class="form-select" required>
+                            <option value="">Select your university...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="applicantMajor">Preferred Major / Area of Expertise</label>
+                        <input type="text" id="applicantMajor" class="form-input"
+                            placeholder="e.g., Computer Science, Mathematics">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="applicantMessage">Why do you want to be an Admin?
+                            (Optional)</label>
+                        <textarea id="applicantMessage" class="form-textarea"
+                            placeholder="Tell us a bit about yourself and why you want to contribute..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-secondary" style="width: 100%; justify-content: center;"
+                        id="submitBtn">
+                        Submit Application →
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Success Message (hidden by default) -->
+        <div class="success-message" id="successMessage">
+            <div class="success-icon">✅</div>
+            <h2>Application Submitted!</h2>
+            <p class="mt-md" style="font-size: 1.1rem;">Thank you for your interest in becoming an Admin Lite
+                contributor.</p>
+            <p class="mt-md" style="font-size: 1.25rem; font-weight: 700;">You will be contacted soon.</p>
+            <a href="index.html" class="btn btn-primary mt-lg">← Back to Dashboard</a>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-content">
+            <div class="footer-logo">
+                <div class="logo-icon" style="width: 32px; height: 32px; font-size: 1rem;">PB</div>
+                <span>Pro Bono</span>
+            </div>
+            <p style="font-family: var(--font-mono); font-size: 0.9rem;">© 2025 Pro Bono • Built with Neo Brutalism</p>
+        </div>
+    </footer>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="app.js"></script>
+    <script>
+        // Load universities on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            const select = document.getElementById('applicantUniversity');
+            try {
+                const universities = await getUniversitiesAsync();
+                universities.forEach(uni => {
+                    const option = document.createElement('option');
+                    option.value = uni.id;
+                    option.textContent = uni.name;
+                    option.dataset.name = uni.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading universities:', error);
+            }
+        });
+
+        document.getElementById('applicationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('applicantEmail').value.trim();
+            const universitySelect = document.getElementById('applicantUniversity');
+            const universityId = universitySelect.value;
+            const universityName = universitySelect.options[universitySelect.selectedIndex]?.dataset?.name || '';
+            const major = document.getElementById('applicantMajor').value.trim();
+            const message = document.getElementById('applicantMessage').value.trim();
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (!email) {
+                alert('Please enter your email address.');
+                return;
+            }
+
+            if (!universityId) {
+                alert('Please select your university.');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+
+            try {
+                // Store application in Firestore
+                await firebaseDb.collection('adminApplications').add({
+                    email: email,
+                    preferredUniversity: universityId,
+                    universityName: universityName,
+                    preferredMajor: major || 'Not specified',
+                    message: message || '',
+                    appliedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    status: 'pending'
+                });
+
+                // Show success message
+                document.getElementById('responsibilitiesSection').style.display = 'none';
+                document.getElementById('successMessage').classList.add('show');
+
+            } catch (error) {
+                console.error('Error submitting application:', error);
+                alert('Error submitting application. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Application →';
+            }
+        });
+    </script>
+</body>
+
+</html>

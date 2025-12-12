@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Course details with videos and resources">
+    <title>Course | Pro Bono</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">PB</div>
+                <span>Pro Bono</span>
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Courses</a></li>
+                    <li><a href="calendar.html">Calendar</a></li>
+                    <li><a href="us.html">Us</a></li>
+                    <li><a href="admin.html">Admin</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <!-- Back Link -->
+            <a href="index.html" class="back-link">
+                ← Back to Courses
+            </a>
+
+            <!-- Loading State -->
+            <div class="empty-state" id="loadingState">
+                <div class="empty-state-icon">⏳</div>
+                <h3>Loading Course...</h3>
+            </div>
+
+            <!-- Course Content (hidden until loaded) -->
+            <div id="courseContent" style="display: none;">
+                <!-- Course Header -->
+                <div class="course-header" id="courseHeader">
+                    <!-- Dynamic content -->
+                </div>
+
+                <!-- Videos Section -->
+                <section class="section" id="videosSection">
+                    <h2 class="section-title">
+                        <span class="section-icon" style="background: #FF6B9D;">📹</span>
+                        Video Lectures
+                    </h2>
+                    <div class="video-grid" id="videoGrid">
+                        <!-- Dynamic content -->
+                    </div>
+                    <div class="empty-state" id="videosEmpty" style="display: none;">
+                        <div class="empty-state-icon">🎬</div>
+                        <h3>No Videos Yet</h3>
+                        <p>Video lectures will be added soon.</p>
+                    </div>
+                </section>
+
+                <!-- Resources Section (Unified) -->
+                <section class="section" id="resourcesSection">
+                    <h2 class="section-title">
+                        <span class="section-icon" style="background: #4ECDC4;">📦</span>
+                        Course Resources
+                    </h2>
+                    <div class="resource-list" id="resourcesList">
+                        <!-- Dynamic content -->
+                    </div>
+                    <div class="empty-state" id="resourcesEmpty" style="display: none;">
+                        <div class="empty-state-icon">📂</div>
+                        <h3>No Resources Yet</h3>
+                        <p>Textbooks, PPTs, flashcards, and other resources will be added soon.</p>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Flashcard Viewer Modal -->
+    <div class="modal-overlay" id="flashcardModal">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-header" style="background: #FFD93D;">
+                <h3 class="modal-title" id="flashcardTitle">🃏 Flashcards</h3>
+                <button class="modal-close" onclick="closeFlashcardModal()">×</button>
+            </div>
+            <div class="modal-body" style="text-align: center; padding: 2rem;">
+                <div id="flashcardCard"
+                    style="min-height: 200px; padding: 2rem; border: 3px solid #1A1A1A; background: white; cursor: pointer;"
+                    onclick="flipCard()">
+                    <p id="flashcardContent" style="font-size: 1.2rem; margin: 0;"></p>
+                </div>
+                <p id="flashcardHint" style="margin-top: 1rem; color: #666; font-size: 0.9rem;">Click the card to flip
+                </p>
+                <p id="flashcardProgress" style="margin-top: 0.5rem; font-weight: bold;"></p>
+            </div>
+            <div class="modal-footer" style="justify-content: center; gap: 1rem;">
+                <button class="btn" onclick="prevCard()">← Previous</button>
+                <button class="btn btn-primary" onclick="nextCard()">Next →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer
+        style="border-top: 4px solid #1A1A1A; padding: 1.5rem 0; text-align: center; font-family: var(--font-mono);">
+        <div class="container">
+            <p><strong>Pro Bono</strong> &copy; 2025 • Built with Neo Brutalism</p>
+        </div>
+    </footer>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="app.js"></script>
+    <script>
+        // Initialize course page
+        document.addEventListener('DOMContentLoaded', async () => {
+            const courseId = getUrlParam('id');
+            if (!courseId) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const course = await getCourseByIdAsync(courseId);
+            if (!course) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('courseContent').style.display = 'block';
+            renderCourse(course);
+        });
+
+        function renderCourse(course) {
+            // Update page title
+            document.title = `${course.title} | Pro Bono`;
+
+            // Render header
+            const headerEl = document.getElementById('courseHeader');
+            headerEl.style.borderTop = `8px solid ${course.color}`;
+            const resources = course.resources || [];
+            const videoCount = course.videos?.length || 0;
+            const resourceCount = resources.length;
+
+            headerEl.innerHTML = `
+        <h1>${escapeHtml(course.title)}</h1>
+        <p class="mt-sm" style="font-size: 1.1rem;">${escapeHtml(course.description)}</p>
+        <div class="card-meta mt-md">
+          <span class="tag">📹 ${videoCount} Videos</span>
+          <span class="tag">📦 ${resourceCount} Resources</span>
+        </div>
+      `;
+
+            // Render videos
+            const videoGrid = document.getElementById('videoGrid');
+            const videosEmpty = document.getElementById('videosEmpty');
+
+            if (course.videos.length === 0) {
+                videoGrid.style.display = 'none';
+                videosEmpty.style.display = 'block';
+            } else {
+                videoGrid.style.display = 'grid';
+                videosEmpty.style.display = 'none';
+                videoGrid.innerHTML = course.videos.map(video => `
+          <div class="video-card">
+            <div class="video-embed">
+              <iframe 
+                src="https://www.youtube.com/embed/${escapeHtml(video.youtubeId)}" 
+                title="${escapeHtml(video.title)}"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen>
+              </iframe>
+            </div>
+            <div class="video-title">${escapeHtml(video.title)}</div>
+          </div>
+        `).join('');
+            }
+
+            // Render unified resources
+            const resourcesList = document.getElementById('resourcesList');
+            const resourcesEmpty = document.getElementById('resourcesEmpty');
+
+            if (resources.length === 0) {
+                resourcesList.style.display = 'none';
+                resourcesEmpty.style.display = 'block';
+            } else {
+                resourcesList.style.display = 'flex';
+                resourcesEmpty.style.display = 'none';
+
+                const typeInfo = {
+                    textbook: { icon: '📚', label: 'Textbook', color: '#6BCB77' },
+                    ppt: { icon: '📊', label: 'PPT', color: '#4ECDC4' },
+                    flashcard: { icon: '🃏', label: 'Flashcards', color: '#FFD93D' },
+                    problemset: { icon: '📝', label: 'Problem Set', color: '#FF6B9D' },
+                    questionpaper: { icon: '📄', label: 'Question Paper', color: '#9B59B6' }
+                };
+
+                resourcesList.innerHTML = resources.map((resource, index) => {
+                    const info = typeInfo[resource.type] || { icon: '📁', label: resource.type, color: '#666' };
+                    const isFlashcard = resource.type === 'flashcard';
+                    const cardCount = isFlashcard && resource.cards ? resource.cards.length : 0;
+
+                    return `
+          <div class="resource-item">
+            <div class="resource-info">
+              <div class="resource-icon" style="background: ${info.color};">${info.icon}</div>
+              <div>
+                <span class="resource-title">${escapeHtml(resource.title)}</span>
+                <br><small style="color: #666;">${info.label}${isFlashcard ? ` • ${cardCount} cards` : ''}</small>
+              </div>
+            </div>
+            ${isFlashcard ?
+                            `<button onclick="openFlashcards(${index})" class="resource-link" style="border: 2px solid #1A1A1A; background: #FFD93D; cursor: pointer;">
+                Study Cards →
+              </button>` :
+                            `<a href="${escapeHtml(resource.driveLink || '')}" target="_blank" rel="noopener" class="resource-link">
+                Open in Drive →
+              </a>`
+                        }
+          </div>
+        `;
+                }).join('');
+            }
+
+            // Store course globally for flashcard access
+            window.currentCourse = course;
+        }
+
+        // Flashcard Viewer
+        let flashcardData = [];
+        let currentCardIndex = 0;
+        let showingAnswer = false;
+
+        function openFlashcards(resourceIndex) {
+            const course = window.currentCourse;
+            const resource = course.resources[resourceIndex];
+
+            if (!resource || !resource.cards || resource.cards.length === 0) {
+                alert('No flashcards found in this set.');
+                return;
+            }
+
+            flashcardData = resource.cards;
+            currentCardIndex = 0;
+            showingAnswer = false;
+
+            document.getElementById('flashcardTitle').textContent = `🃏 ${resource.title}`;
+            updateFlashcard();
+            document.getElementById('flashcardModal').classList.add('show');
+        }
+
+        function closeFlashcardModal() {
+            document.getElementById('flashcardModal').classList.remove('show');
+        }
+
+        function updateFlashcard() {
+            const card = flashcardData[currentCardIndex];
+            const content = showingAnswer ? card.answer : card.question;
+            const cardEl = document.getElementById('flashcardCard');
+
+            document.getElementById('flashcardContent').textContent = content;
+            document.getElementById('flashcardProgress').textContent = `Card ${currentCardIndex + 1} of ${flashcardData.length}`;
+            document.getElementById('flashcardHint').textContent = showingAnswer ? 'Showing Answer • Click to see Question' : 'Showing Question • Click to see Answer';
+
+            cardEl.style.background = showingAnswer ? '#E8F5E9' : 'white';
+        }
+
+        function flipCard() {
+            showingAnswer = !showingAnswer;
+            updateFlashcard();
+        }
+
+        function nextCard() {
+            if (currentCardIndex < flashcardData.length - 1) {
+                currentCardIndex++;
+                showingAnswer = false;
+                updateFlashcard();
+            } else {
+                alert('🎉 You\'ve completed all flashcards!');
+            }
+        }
+
+        function prevCard() {
+            if (currentCardIndex > 0) {
+                currentCardIndex--;
+                showingAnswer = false;
+                updateFlashcard();
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+
+</html>

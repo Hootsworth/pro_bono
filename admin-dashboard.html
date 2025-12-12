@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Admin dashboard for managing Pro Bono courses">
+    <title>Admin Dashboard | Pro Bono</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">PB</div>
+                <span>Pro Bono</span>
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Courses</a></li>
+                    <li><a href="#" id="logoutBtn" style="background: var(--accent-pink);">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Admin Layout -->
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <h3 class="mb-md">📊 Admin Panel</h3>
+            <ul class="sidebar-nav">
+                <li><a href="#" class="active" data-view="courses" onclick="showView('courses')">📚 Manage Courses</a>
+                </li>
+                <li id="universitiesNavItem" style="display: none;"><a href="#" data-view="universities"
+                        onclick="showView('universities')">🏫 Universities</a></li>
+                <li id="timetablesNavItem"><a href="#" data-view="timetables" onclick="showView('timetables')">📅
+                        Timetables</a></li>
+                <li id="eventsNavItem"><a href="#" data-view="events" onclick="showView('events')">🗓️ Academic
+                        Calendar</a></li>
+                <li id="majorsNavItem" style="display: none;"><a href="#" data-view="majors"
+                        onclick="showView('majors')">🎓 Manage Majors</a></li>
+                <li id="subjectsNavItem" style="display: none;"><a href="#" data-view="subjects"
+                        onclick="showView('subjects')">📖 Manage Subjects</a></li>
+                <li id="adminsNavItem" style="display: none;"><a href="#" data-view="admins"
+                        onclick="showView('admins')">👥 Admin Lites</a></li>
+                <li id="applicationsNavItem" style="display: none;"><a href="#" data-view="applications"
+                        onclick="showView('applications')">📋 Applications</a></li>
+            </ul>
+            <div class="mt-lg" style="padding-top: var(--space-md); border-top: var(--border-thin);">
+                <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                    Logged in as<br>
+                    <strong style="color: var(--text-primary);" id="userEmail">Admin</strong>
+                </p>
+                <span class="badge" id="roleBadge" style="margin-top: 8px; display: inline-block;">Loading...</span>
+                <p id="assignedMajorInfo" style="font-size: 0.8rem; margin-top: 8px; display: none;">
+                    <strong>Your Major:</strong><br>
+                    <span id="assignedMajorName">-</span>
+                </p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-content">
+            <!-- Loading State -->
+            <div class="empty-state" id="loadingState">
+                <div class="empty-state-icon">⏳</div>
+                <h3>Loading...</h3>
+            </div>
+
+            <!-- Courses View -->
+            <div id="coursesView" style="display: none;">
+                <div class="admin-header">
+                    <h1>📚 Manage Courses</h1>
+                    <button class="btn btn-primary" id="addCourseBtn">+ Add Course</button>
+                </div>
+
+                <!-- Courses Table -->
+                <table class="admin-table" id="coursesTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;">Color</th>
+                            <th>Course Title</th>
+                            <th>Semester</th>
+                            <th>Subject</th>
+                            <th>V/P/PS</th>
+                            <th style="width: 200px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="coursesTableBody">
+                        <!-- Dynamic content -->
+                    </tbody>
+                </table>
+
+                <div class="empty-state" id="coursesEmpty" style="display: none;">
+                    <div class="empty-state-icon">📭</div>
+                    <h3>No Courses Yet</h3>
+                    <p>Click the button above to create your first course.</p>
+                </div>
+            </div>
+
+            <!-- Majors View (Super Admin Only) -->
+            <div id="majorsView" style="display: none;">
+                <div class="admin-header">
+                    <h1>🎓 Manage Majors</h1>
+                    <button class="btn btn-primary" id="addMajorBtn">+ Add Major</button>
+                </div>
+                <p class="mb-md" style="color: var(--text-secondary);">Majors are the top-level category. Admin Lite
+                    users are assigned to a major and can only manage courses within it.</p>
+
+                <div id="majorsList" class="resource-list"></div>
+
+                <div class="empty-state" id="majorsEmpty" style="display: none;">
+                    <div class="empty-state-icon">🎓</div>
+                    <h3>No Majors Yet</h3>
+                    <p>Add your first major to organize courses.</p>
+                </div>
+            </div>
+
+            <!-- Subjects View (Super Admin Only) -->
+            <div id="subjectsView" style="display: none;">
+                <div class="admin-header">
+                    <h1>📖 Manage Subjects</h1>
+                    <button class="btn btn-primary" id="addSubjectBtn">+ Add Subject</button>
+                </div>
+                <p class="mb-md" style="color: var(--text-secondary);">Subjects are course categories that appear in
+                    filter pills on the dashboard.</p>
+
+                <div id="subjectsList" class="resource-list"></div>
+
+                <div class="empty-state" id="subjectsEmpty" style="display: none;">
+                    <div class="empty-state-icon">📖</div>
+                    <h3>No Subjects Yet</h3>
+                    <p>Add your first subject to categorize courses.</p>
+                </div>
+            </div>
+
+            <!-- Universities View (Super Admin Only) -->
+            <div id="universitiesView" style="display: none;">
+                <div class="admin-header">
+                    <h1>🏫 Manage Universities</h1>
+                    <button class="btn btn-primary" id="addUniversityBtn">+ Add University</button>
+                </div>
+                <p class="mb-md" style="color: var(--text-secondary);">Universities organize timetables and academic
+                    calendars. Admin Lite users are assigned to a university.</p>
+
+                <div id="universitiesList" class="resource-list"></div>
+
+                <div class="empty-state" id="universitiesEmpty" style="display: none;">
+                    <div class="empty-state-icon">🏫</div>
+                    <h3>No Universities Yet</h3>
+                    <p>Add your first university to get started.</p>
+                </div>
+            </div>
+
+            <!-- Timetables View -->
+            <div id="timetablesView" style="display: none;">
+                <div class="admin-header">
+                    <h1>📅 Manage Timetables</h1>
+                    <button class="btn btn-primary" id="addTimetableBtn">+ Add Timetable</button>
+                </div>
+                <p class="mb-md" style="color: var(--text-secondary);">Create timetables with subjects, schedules,
+                    portions, and important topics.</p>
+
+                <div class="filter-bar mb-md">
+                    <select id="timetableUniversityFilter" class="form-select" style="max-width: 200px;">
+                        <option value="">Select University...</option>
+                    </select>
+                    <select id="timetableSemesterFilter" class="form-select" style="max-width: 150px;">
+                        <option value="">All Semesters</option>
+                        <option value="Sem 1">Semester 1</option>
+                        <option value="Sem 2">Semester 2</option>
+                        <option value="Sem 3">Semester 3</option>
+                        <option value="Sem 4">Semester 4</option>
+                        <option value="Sem 5">Semester 5</option>
+                        <option value="Sem 6">Semester 6</option>
+                        <option value="Sem 7">Semester 7</option>
+                        <option value="Sem 8">Semester 8</option>
+                    </select>
+                </div>
+
+                <div id="timetablesList" class="resource-list"></div>
+
+                <div class="empty-state" id="timetablesEmpty" style="display: none;">
+                    <div class="empty-state-icon">📅</div>
+                    <h3>No Timetables Yet</h3>
+                    <p>Add your first timetable for this university.</p>
+                </div>
+            </div>
+
+            <!-- Academic Events View -->
+            <div id="eventsView" style="display: none;">
+                <div class="admin-header">
+                    <h1>🗓️ Academic Calendar</h1>
+                    <button class="btn btn-primary" id="addEventBtn">+ Add Event</button>
+                </div>
+                <p class="mb-md" style="color: var(--text-secondary);">Add internal exams, finals, holidays, and other
+                    important dates.</p>
+
+                <div class="filter-bar mb-md">
+                    <select id="eventUniversityFilter" class="form-select" style="max-width: 200px;">
+                        <option value="">Select University...</option>
+                    </select>
+                </div>
+
+                <div id="eventsList" class="resource-list"></div>
+
+                <div class="empty-state" id="eventsEmpty" style="display: none;">
+                    <div class="empty-state-icon">🗓️</div>
+                    <h3>No Events Yet</h3>
+                    <p>Add your first academic event.</p>
+                </div>
+            </div>
+
+            <!-- Admin Lites View (Super Admin Only) -->
+            <div id="adminsView" style="display: none;">
+                <div class="admin-header">
+                    <h1>👥 Admin Lite Users</h1>
+                    <button class="btn btn-primary" id="addAdminLiteBtn">+ Add Admin Lite</button>
+                </div>
+                <p class="mb-md" style="color: var(--text-secondary);">Admin Lite users can manage courses within their
+                    assigned major only.</p>
+
+                <table class="admin-table" id="adminsTable">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Assigned Major</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminsTableBody"></tbody>
+                </table>
+
+                <div class="empty-state" id="adminsEmpty" style="display: none;">
+                    <div class="empty-state-icon">👥</div>
+                    <h3>No Admin Lite Users</h3>
+                    <p>Add admin lite users to help manage content.</p>
+                </div>
+            </div>
+
+            <!-- Applications View (Super Admin Only) -->
+            <div id="applicationsView" style="display: none;">
+                <div class="admin-header">
+                    <h1>📋 Admin Applications</h1>
+                </div>
+                <p class="mb-md" style="color: var(--text-secondary);">Review applications from users who want to become
+                    Admin Lite contributors.</p>
+
+                <div id="applicationsList" class="resource-list"></div>
+
+                <div class="empty-state" id="applicationsEmpty" style="display: none;">
+                    <div class="empty-state-icon">📋</div>
+                    <h3>No Pending Applications</h3>
+                    <p>New applications will appear here.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Course Modal -->
+    <div class="modal-overlay" id="courseModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="courseModalTitle">Add New Course</h3>
+                <button class="modal-close" id="closeCourseModal">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="courseForm">
+                    <input type="hidden" id="courseId">
+
+                    <div class="form-group">
+                        <label class="form-label" for="courseTitle">Course Title *</label>
+                        <input type="text" id="courseTitle" class="form-input"
+                            placeholder="e.g., Introduction to Programming" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="courseDescription">Description *</label>
+                        <textarea id="courseDescription" class="form-textarea"
+                            placeholder="Brief description of the course..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="courseMajor">Major *</label>
+                        <select id="courseMajor" class="form-select" required>
+                            <option value="">Select Major</option>
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+                        <div class="form-group">
+                            <label class="form-label" for="courseSemester">Semester</label>
+                            <select id="courseSemester" class="form-select">
+                                <option value="">Select Semester</option>
+                                <option value="Sem 1">Sem 1</option>
+                                <option value="Sem 2">Sem 2</option>
+                                <option value="Sem 3">Sem 3</option>
+                                <option value="Sem 4">Sem 4</option>
+                                <option value="Sem 5">Sem 5</option>
+                                <option value="Sem 6">Sem 6</option>
+                                <option value="Sem 7">Sem 7</option>
+                                <option value="Sem 8">Sem 8</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="courseSubject">Subject</label>
+                            <select id="courseSubject" class="form-select">
+                                <option value="">Select Subject</option>
+                                <option value="Computer Science">Computer Science</option>
+                                <option value="Mathematics">Mathematics</option>
+                                <option value="Physics">Physics</option>
+                                <option value="Web Development">Web Development</option>
+                                <option value="Data Science">Data Science</option>
+                                <option value="Machine Learning">Machine Learning</option>
+                                <option value="Electronics">Electronics</option>
+                                <option value="General">General</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-md);">
+                        <div class="form-group">
+                            <label class="form-label" for="courseInstructor">Instructor</label>
+                            <input type="text" id="courseInstructor" class="form-input" placeholder="e.g., Prof. Smith">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="courseCredits">Credits</label>
+                            <input type="number" id="courseCredits" class="form-input" placeholder="e.g., 4" min="1"
+                                max="10">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Accent Color</label>
+                        <div class="color-options" id="colorOptions">
+                            <div class="color-option selected" data-color="#FFD93D" style="background: #FFD93D;"></div>
+                            <div class="color-option" data-color="#6BCB77" style="background: #6BCB77;"></div>
+                            <div class="color-option" data-color="#FF6B9D" style="background: #FF6B9D;"></div>
+                            <div class="color-option" data-color="#A66CFF" style="background: #A66CFF;"></div>
+                            <div class="color-option" data-color="#FF9F45" style="background: #FF9F45;"></div>
+                            <div class="color-option" data-color="#4ECDC4" style="background: #4ECDC4;"></div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="cancelCourseBtn">Cancel</button>
+                <button class="btn btn-primary" id="saveCourseBtn">Save Course</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Course Detail Modal (for managing videos/resources) -->
+    <div class="modal-overlay" id="courseDetailModal">
+        <div class="modal" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="courseDetailTitle">Manage Course</h3>
+                <button class="modal-close" id="closeCourseDetailModal">×</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="detailCourseId">
+
+                <!-- Videos Section -->
+                <div class="section">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm);">
+                        <h4>📹 Videos</h4>
+                        <button class="btn btn-success" id="addVideoBtn"
+                            style="padding: 6px 12px; font-size: 0.85rem;">+ Add Video</button>
+                    </div>
+                    <div id="videosList" class="resource-list"></div>
+                </div>
+
+                <!-- Add Video Form (hidden by default) -->
+                <div id="videoForm"
+                    style="display: none; padding: var(--space-md); border: var(--border-thick); margin-bottom: var(--space-md); background: var(--bg-secondary);">
+                    <h4 class="mb-sm">Add New Video</h4>
+                    <div class="form-group">
+                        <label class="form-label">Video Title *</label>
+                        <input type="text" id="videoTitle" class="form-input"
+                            placeholder="e.g., Lecture 1 - Introduction">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">YouTube URL or Video ID *</label>
+                        <input type="text" id="videoUrl" class="form-input"
+                            placeholder="e.g., https://youtube.com/watch?v=... or abc123">
+                    </div>
+                    <div style="display: flex; gap: var(--space-sm);">
+                        <button class="btn btn-primary" id="saveVideoBtn">Add Video</button>
+                        <button class="btn" id="cancelVideoBtn">Cancel</button>
+                    </div>
+                </div>
+
+                <!-- Resources Section (Unified) -->
+                <div class="section">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm);">
+                        <h4>� Resources</h4>
+                        <button class="btn btn-success" id="addResourceBtn"
+                            style="padding: 6px 12px; font-size: 0.85rem;">+ Add Resource</button>
+                    </div>
+                    <div id="resourcesList" class="resource-list"></div>
+                </div>
+
+                <!-- Add Resource Form (hidden by default) -->
+                <div id="resourceForm"
+                    style="display: none; padding: var(--space-md); border: var(--border-thick); margin-bottom: var(--space-md); background: var(--bg-secondary);">
+                    <h4 class="mb-sm">Add New Resource</h4>
+
+                    <div class="form-group">
+                        <label class="form-label">Resource Type *</label>
+                        <select id="resourceType" class="form-select" onchange="toggleResourceFields()">
+                            <option value="">Select Type...</option>
+                            <option value="textbook">📚 Textbook / Reference Book</option>
+                            <option value="ppt">📊 PPT / Presentation</option>
+                            <option value="flashcard">🃏 Flashcards (CSV Upload)</option>
+                            <option value="problemset">📝 Problem Set</option>
+                            <option value="questionpaper">📄 Question Paper</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Title *</label>
+                        <input type="text" id="resourceTitle" class="form-input" placeholder="e.g., Chapter 1 Notes">
+                    </div>
+
+                    <!-- Drive Link (for non-flashcard types) -->
+                    <div class="form-group" id="driveLinkField">
+                        <label class="form-label">Google Drive Link *</label>
+                        <input type="text" id="resourceDriveLink" class="form-input"
+                            placeholder="https://drive.google.com/...">
+                    </div>
+
+                    <!-- CSV Upload (for flashcards only) -->
+                    <div id="flashcardUploadField" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label">Upload CSV File *</label>
+                            <input type="file" id="flashcardCsvFile" class="form-input" accept=".csv"
+                                onchange="previewFlashcards()">
+                            <small style="color: var(--text-secondary); display: block; margin-top: 4px;">
+                                CSV format: Column A = Questions, Column B = Answers. One Q&A per row.
+                            </small>
+                        </div>
+                        <div id="flashcardPreview"
+                            style="display: none; margin-top: var(--space-md); padding: var(--space-sm); background: var(--accent-yellow); border: var(--border-thin);">
+                            <strong>Preview:</strong>
+                            <p id="flashcardCount" style="margin: 4px 0;"></p>
+                            <div id="flashcardSample" style="font-size: 0.9rem;"></div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: var(--space-sm); margin-top: var(--space-md);">
+                        <button class="btn btn-primary" id="saveResourceBtn" onclick="saveResource()">Add
+                            Resource</button>
+                        <button class="btn" onclick="toggleResourceForm(false)">Cancel</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="closeCourseDetailBtn">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header" style="background: var(--accent-pink);">
+                <h3 class="modal-title">⚠️ Confirm Delete</h3>
+                <button class="modal-close" id="closeDeleteModal">×</button>
+            </div>
+            <div class="modal-body">
+                <p id="deleteMessage">Are you sure you want to delete this item? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="cancelDeleteBtn">Cancel</button>
+                <button class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Major Modal -->
+    <div class="modal-overlay" id="majorModal">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header" style="background: var(--accent-purple);">
+                <h3 class="modal-title">🎓 Add Major</h3>
+                <button class="modal-close" onclick="closeMajorModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label" for="majorName">Major Name *</label>
+                    <input type="text" id="majorName" class="form-input" placeholder="e.g., Computer Science">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeMajorModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveMajor()">Add Major</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Subject Modal -->
+    <div class="modal-overlay" id="subjectModal">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header" style="background: var(--accent-green);">
+                <h3 class="modal-title">📖 Add Subject</h3>
+                <button class="modal-close" onclick="closeSubjectModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label" for="subjectName">Subject Name *</label>
+                    <input type="text" id="subjectName" class="form-input" placeholder="e.g., Data Science">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeSubjectModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveSubject()">Add Subject</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add University Modal -->
+    <div class="modal-overlay" id="universityModal">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header" style="background: var(--accent-pink);">
+                <h3 class="modal-title">🏫 Add University</h3>
+                <button class="modal-close" onclick="closeUniversityModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label" for="universityName">University Name *</label>
+                    <input type="text" id="universityName" class="form-input" placeholder="e.g., RV University">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="universityShortCode">Short Code (Optional)</label>
+                    <input type="text" id="universityShortCode" class="form-input" placeholder="e.g., RVU">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeUniversityModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveUniversity()">Add University</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Timetable Modal -->
+    <div class="modal-overlay" id="timetableModal">
+        <div class="modal" style="max-width: 700px;">
+            <div class="modal-header" style="background: var(--accent-cyan);">
+                <h3 class="modal-title">📅 Add Timetable</h3>
+                <button class="modal-close" onclick="closeTimetableModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="timetableId">
+                <div
+                    style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-sm); margin-bottom: var(--space-md);">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">University *</label>
+                        <select id="timetableUniversity" class="form-select"></select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Semester *</label>
+                        <select id="timetableSemester" class="form-select">
+                            <option value="Sem 1">Semester 1</option>
+                            <option value="Sem 2">Semester 2</option>
+                            <option value="Sem 3">Semester 3</option>
+                            <option value="Sem 4">Semester 4</option>
+                            <option value="Sem 5">Semester 5</option>
+                            <option value="Sem 6">Semester 6</option>
+                            <option value="Sem 7">Semester 7</option>
+                            <option value="Sem 8">Semester 8</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Major *</label>
+                        <select id="timetableMajor" class="form-select"></select>
+                    </div>
+                </div>
+
+                <h4 class="mb-sm">Subjects</h4>
+                <div id="timetableSubjects" style="max-height: 300px; overflow-y: auto;">
+                    <!-- Subject entries will be added here -->
+                </div>
+                <button class="btn btn-success mt-sm" onclick="addSubjectEntry()" style="font-size: 0.85rem;">+ Add
+                    Subject</button>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeTimetableModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveTimetable()">Save Timetable</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Event Modal -->
+    <div class="modal-overlay" id="eventModal">
+        <div class="modal" style="max-width: 500px;">
+            <div class="modal-header" style="background: var(--accent-yellow);">
+                <h3 class="modal-title">🗓️ Add Academic Event</h3>
+                <button class="modal-close" onclick="closeEventModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="eventId">
+                <div class="form-group">
+                    <label class="form-label">University *</label>
+                    <select id="eventUniversity" class="form-select"></select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Event Title *</label>
+                    <input type="text" id="eventTitle" class="form-input" placeholder="e.g., Internal Assessment 2">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Event Type *</label>
+                    <select id="eventType" class="form-select">
+                        <option value="internal">📝 Internal Assessment</option>
+                        <option value="final">🎓 Final Exam</option>
+                        <option value="holiday">🎉 Holiday</option>
+                        <option value="event">📅 Event</option>
+                        <option value="deadline">⏰ Deadline</option>
+                    </select>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-sm);">
+                    <div class="form-group">
+                        <label class="form-label">Start Date *</label>
+                        <input type="date" id="eventStartDate" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">End Date</label>
+                        <input type="date" id="eventEndDate" class="form-input">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description (Optional)</label>
+                    <textarea id="eventDescription" class="form-textarea"
+                        placeholder="Additional details..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeEventModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveEvent()">Save Event</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Admin Lite Modal -->
+    <div class="modal-overlay" id="adminLiteModal">
+        <div class="modal" style="max-width: 450px;">
+            <div class="modal-header" style="background: var(--accent-cyan);">
+                <h3 class="modal-title">👤 Add Admin Lite</h3>
+                <button class="modal-close" onclick="closeAdminLiteModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-md" style="color: var(--text-secondary);">The user must first create a Firebase account.
+                    Enter their email to assign admin privileges.</p>
+                <div class="form-group">
+                    <label class="form-label" for="adminEmail">Email Address *</label>
+                    <input type="email" id="adminEmail" class="form-input" placeholder="user@example.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="adminMajor">Assigned Major *</label>
+                    <select id="adminMajor" class="form-select">
+                        <option value="">Select Major</option>
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeAdminLiteModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveAdminLite()">Add Admin Lite</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="app.js"></script>
+    <script src="admin.js"></script>
+</body>
+
+</html>

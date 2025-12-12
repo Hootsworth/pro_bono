@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Pro Bono - Free educational dashboard with courses, videos, and resources">
+  <meta name="keywords" content="education, courses, learning, pro bono, free education">
+  <meta name="author" content="Pro Bono">
+  <meta name="theme-color" content="#FFD93D">
+  <title>Pro Bono | Educational Dashboard</title>
+
+  <!-- Favicon -->
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23FFD93D' width='100' height='100' rx='10'/><text y='.9em' font-size='80' x='50%' text-anchor='middle'>📚</text></svg>">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+    rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <!-- Custom PB Loader -->
+  <div class="loader-overlay" id="loader">
+    <div class="loader-logo">PB</div>
+    <div class="loader-text">Pro Bono</div>
+    <div class="loader-dots">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="container header-content">
+      <a href="index.html" class="logo">
+        <div class="logo-icon">PB</div>
+        <span>Pro Bono</span>
+      </a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html">Courses</a></li>
+          <li><a href="calendar.html">Calendar</a></li>
+          <li><a href="us.html">Us</a></li>
+          <li><a href="admin.html">Admin</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <h1>📚 Pro Bono</h1>
+      <p>Your free gateway to quality education. Access courses, video lectures, question papers, and problem sets.</p>
+      <a href="apply-admin.html" class="btn btn-secondary mt-md" style="display: inline-flex;">
+        🛡️ Apply for Admin Access
+      </a>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="main">
+    <div class="container">
+      <!-- Stats Bar -->
+      <div class="stats-bar" id="statsBar">
+        <div class="stat-item">
+          <span class="stat-value" id="totalCourses">0</span>
+          <span class="stat-label">Courses</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="totalVideos">0</span>
+          <span class="stat-label">Videos</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="totalPapers">0</span>
+          <span class="stat-label">Papers</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="totalProblems">0</span>
+          <span class="stat-label">Problem Sets</span>
+        </div>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" id="searchInput" placeholder="Search courses...">
+        </div>
+
+        <div class="filter-group">
+          <span class="filter-label">Major:</span>
+          <div class="filter-pills" id="majorFilters">
+            <button class="filter-pill active" data-filter="all">All</button>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <span class="filter-label">Semester:</span>
+          <div class="filter-pills" id="semesterFilters">
+            <button class="filter-pill active" data-filter="all">All</button>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <span class="filter-label">Subject:</span>
+          <div class="filter-pills" id="subjectFilters">
+            <button class="filter-pill active" data-filter="all">All</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Course Grid -->
+      <div class="course-grid" id="courseGrid">
+        <!-- Courses will be dynamically inserted here -->
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" id="emptyState" style="display: none;">
+        <div class="empty-state-icon">📭</div>
+        <h3>No Courses Found</h3>
+        <p>Try adjusting your filters or search term.</p>
+        <button class="btn btn-primary" onclick="resetFilters()">Reset Filters</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <div class="footer-logo">
+        <div class="logo-icon" style="width: 32px; height: 32px; font-size: 1rem;">PB</div>
+        <span>Pro Bono</span>
+      </div>
+      <p style="font-family: var(--font-mono); font-size: 0.9rem;">© 2025 Pro Bono • Built with Neo Brutalism</p>
+    </div>
+  </footer>
+
+  <!-- Toast Container -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="app.js"></script>
+  <script>
+    // State
+    let allCourses = [];
+    let activeMajor = 'all';
+    let activeSemester = 'all';
+    let activeSubject = 'all';
+    let searchTerm = '';
+
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        allCourses = await getCoursesAsync();
+
+        // Build filter pills
+        buildFilters();
+
+        // Render courses
+        renderCourses();
+
+        // Update stats
+        updateStats();
+
+        // Setup event listeners
+        setupFilters();
+
+        // Hide loader with delay for smooth animation
+        setTimeout(() => {
+          document.getElementById('loader').classList.add('hidden');
+        }, 800);
+
+      } catch (error) {
+        console.error('Error loading courses:', error);
+        showToast('Error loading courses', 'error');
+        document.getElementById('loader').classList.add('hidden');
+      }
+    });
+
+    function buildFilters() {
+      // Get unique majors, semesters, and subjects from courses
+      const majors = [...new Set(allCourses.map(c => c.major).filter(Boolean))].sort();
+      const semesters = [...new Set(allCourses.map(c => c.semester).filter(Boolean))].sort();
+      const subjects = [...new Set(allCourses.map(c => c.subject).filter(Boolean))].sort();
+
+      // Build major pills
+      const majorContainer = document.getElementById('majorFilters');
+      majors.forEach(major => {
+        const pill = document.createElement('button');
+        pill.className = 'filter-pill';
+        pill.dataset.filter = major;
+        pill.textContent = major;
+        majorContainer.appendChild(pill);
+      });
+
+      // Build semester pills
+      const semesterContainer = document.getElementById('semesterFilters');
+      semesters.forEach(sem => {
+        const pill = document.createElement('button');
+        pill.className = 'filter-pill';
+        pill.dataset.filter = sem;
+        pill.textContent = sem;
+        semesterContainer.appendChild(pill);
+      });
+
+      // Build subject pills
+      const subjectContainer = document.getElementById('subjectFilters');
+      subjects.forEach(sub => {
+        const pill = document.createElement('button');
+        pill.className = 'filter-pill';
+        pill.dataset.filter = sub;
+        pill.textContent = sub;
+        subjectContainer.appendChild(pill);
+      });
+    }
+
+    function setupFilters() {
+      // Major filter clicks
+      document.getElementById('majorFilters').addEventListener('click', (e) => {
+        if (e.target.classList.contains('filter-pill')) {
+          document.querySelectorAll('#majorFilters .filter-pill').forEach(p => p.classList.remove('active'));
+          e.target.classList.add('active');
+          activeMajor = e.target.dataset.filter;
+          renderCourses();
+        }
+      });
+
+      // Semester filter clicks
+      document.getElementById('semesterFilters').addEventListener('click', (e) => {
+        if (e.target.classList.contains('filter-pill')) {
+          document.querySelectorAll('#semesterFilters .filter-pill').forEach(p => p.classList.remove('active'));
+          e.target.classList.add('active');
+          activeSemester = e.target.dataset.filter;
+          renderCourses();
+        }
+      });
+
+      // Subject filter clicks
+      document.getElementById('subjectFilters').addEventListener('click', (e) => {
+        if (e.target.classList.contains('filter-pill')) {
+          document.querySelectorAll('#subjectFilters .filter-pill').forEach(p => p.classList.remove('active'));
+          e.target.classList.add('active');
+          activeSubject = e.target.dataset.filter;
+          renderCourses();
+        }
+      });
+
+      // Search input
+      document.getElementById('searchInput').addEventListener('input', (e) => {
+        searchTerm = e.target.value.toLowerCase();
+        renderCourses();
+      });
+    }
+
+    function resetFilters() {
+      activeMajor = 'all';
+      activeSemester = 'all';
+      activeSubject = 'all';
+      searchTerm = '';
+      document.getElementById('searchInput').value = '';
+      document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      document.querySelector('#majorFilters .filter-pill[data-filter="all"]').classList.add('active');
+      document.querySelector('#semesterFilters .filter-pill[data-filter="all"]').classList.add('active');
+      document.querySelector('#subjectFilters .filter-pill[data-filter="all"]').classList.add('active');
+      renderCourses();
+    }
+
+    function getFilteredCourses() {
+      return allCourses.filter(course => {
+        const matchesMajor = activeMajor === 'all' || course.major === activeMajor;
+        const matchesSemester = activeSemester === 'all' || course.semester === activeSemester;
+        const matchesSubject = activeSubject === 'all' || course.subject === activeSubject;
+        const matchesSearch = !searchTerm ||
+          course.title.toLowerCase().includes(searchTerm) ||
+          course.description.toLowerCase().includes(searchTerm) ||
+          (course.instructor && course.instructor.toLowerCase().includes(searchTerm)) ||
+          (course.major && course.major.toLowerCase().includes(searchTerm));
+
+        return matchesMajor && matchesSemester && matchesSubject && matchesSearch;
+      });
+    }
+
+    function renderCourses() {
+      const filteredCourses = getFilteredCourses();
+      const courseGrid = document.getElementById('courseGrid');
+      const emptyState = document.getElementById('emptyState');
+
+      if (filteredCourses.length === 0) {
+        courseGrid.style.display = 'none';
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      courseGrid.style.display = 'grid';
+      emptyState.style.display = 'none';
+
+      courseGrid.innerHTML = filteredCourses.map(course => `
+        <div class="card course-card" onclick="window.location.href='course.html?id=${course.id}'">
+          <div class="card-header" style="background: ${course.color};"></div>
+          <div style="display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap;">
+            ${course.semester ? `<span class="badge badge-semester">${escapeHtml(course.semester)}</span>` : ''}
+            ${course.subject ? `<span class="badge badge-subject">${escapeHtml(course.subject)}</span>` : ''}
+          </div>
+          <h3 class="card-title">${escapeHtml(course.title)}</h3>
+          <p class="card-description">${escapeHtml(course.description)}</p>
+          ${course.instructor ? `<p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">👤 ${escapeHtml(course.instructor)}</p>` : ''}
+          <div class="card-meta">
+            <span class="tag">📹 ${course.videos?.length || 0} Videos</span>
+            <span class="tag">📄 ${course.questionPapers?.length || 0} Papers</span>
+            <span class="tag">📝 ${course.problemSets?.length || 0} Problems</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function updateStats() {
+      const totalVideos = allCourses.reduce((sum, c) => sum + (c.videos?.length || 0), 0);
+      const totalPapers = allCourses.reduce((sum, c) => sum + (c.questionPapers?.length || 0), 0);
+      const totalProblems = allCourses.reduce((sum, c) => sum + (c.problemSets?.length || 0), 0);
+
+      document.getElementById('totalCourses').textContent = allCourses.length;
+      document.getElementById('totalVideos').textContent = totalVideos;
+      document.getElementById('totalPapers').textContent = totalPapers;
+      document.getElementById('totalProblems').textContent = totalProblems;
+    }
+
+    function showToast(message, type = '') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast show ' + type;
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+
+</html>
