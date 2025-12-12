@@ -280,6 +280,9 @@ async function openCourseModal(courseId = null) {
     // Refresh major dropdown
     populateMajorDropdowns();
 
+    // Refresh subject dropdown
+    await populateSubjectDropdowns();
+
     if (courseId) {
         // Edit mode
         const course = await getCourseByIdAsync(courseId);

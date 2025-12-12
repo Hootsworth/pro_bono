@@ -1,86 +1,17 @@
-// Dark Mode Theme Toggle
-// This script handles dark mode functionality across the entire site
+// Dark Mode Theme - Disabled
+// Toggle functionality removed per user request
 
 (function () {
-    // Initialize theme on page load
+    // Initialize theme on page load - keep light mode default
     function initTheme() {
-        const savedTheme = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-        if (savedTheme) {
-            document.documentElement.setAttribute('data-theme', savedTheme);
-        } else if (prefersDark) {
-            document.documentElement.setAttribute('data-theme', 'dark');
-        }
-
-        updateThemeIcon();
-    }
-
-    // Toggle between light and dark mode
-    function toggleTheme() {
-        const currentTheme = document.documentElement.getAttribute('data-theme');
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
-        document.documentElement.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme', newTheme);
-        updateThemeIcon();
-    }
-
-    // Update the toggle button icon
-    function updateThemeIcon() {
-        const themeToggle = document.getElementById('themeToggle');
-        if (themeToggle) {
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            themeToggle.textContent = isDark ? '☀️' : '🌙';
-        }
-    }
-
-    // Create and inject the theme toggle button into the header
-    function createThemeToggle() {
-        if (!document.getElementById('themeToggle')) {
-            const toggle = document.createElement('button');
-            toggle.id = 'themeToggle';
-            toggle.className = 'theme-toggle';
-            toggle.setAttribute('aria-label', 'Toggle dark mode');
-            toggle.textContent = '🌙';
-
-            // Try to inject into header nav
-            const navLinks = document.querySelector('.nav-links');
-            if (navLinks) {
-                const li = document.createElement('li');
-                li.appendChild(toggle);
-                navLinks.appendChild(li);
-            } else {
-                // Fallback to body if no header nav found
-                document.body.appendChild(toggle);
-            }
-        }
+        // Set to light theme by default, ignore saved/system preferences for now
+        document.documentElement.setAttribute('data-theme', 'light');
     }
 
     // Initialize when DOM is ready
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function () {
-            initTheme();
-            createThemeToggle();
-            updateThemeIcon();
-            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-        });
+        document.addEventListener('DOMContentLoaded', initTheme);
     } else {
         initTheme();
-        createThemeToggle();
-        updateThemeIcon();
-        document.getElementById('themeToggle').addEventListener('click', toggleTheme);
     }
-
-    // Listen for system theme changes
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-        if (!localStorage.getItem('theme')) {
-            document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
-            updateThemeIcon();
-        }
-    });
-
-    // Expose functions globally
-    window.toggleTheme = toggleTheme;
-    window.initTheme = initTheme;
 })();
