@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Take a timed quiz">
+    <title>Quiz | Pro Bono</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .quiz-container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .timer-bar {
+            position: fixed;
+            top: 80px;
+            left: 0;
+            right: 0;
+            background: white;
+            border-bottom: 3px solid #1A1A1A;
+            padding: 1rem;
+            z-index: 99;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .timer {
+            font-family: var(--font-mono);
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 0.5rem 1rem;
+            background: var(--accent-yellow);
+            border: 3px solid #1A1A1A;
+        }
+
+        .timer.warning {
+            background: var(--accent-orange);
+        }
+
+        .timer.danger {
+            background: var(--accent-pink);
+            animation: pulse 1s infinite;
+        }
+
+        .question-card {
+            border: 4px solid #1A1A1A;
+            background: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 6px 6px 0 #1A1A1A;
+        }
+
+        .question-number {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .option-btn {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border: 3px solid #1A1A1A;
+            background: white;
+            cursor: pointer;
+            font-size: 1rem;
+            text-align: left;
+            transition: all 0.2s ease;
+        }
+
+        .option-btn:hover {
+            background: var(--bg-secondary);
+            transform: translateX(4px);
+        }
+
+        .option-btn.selected {
+            background: var(--accent-yellow);
+            box-shadow: 4px 4px 0 #1A1A1A;
+        }
+
+        .option-btn.correct {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+        }
+
+        .option-btn.incorrect {
+            background: var(--accent-pink);
+            border-color: var(--accent-pink);
+        }
+
+        .option-letter {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
+            font-weight: bold;
+            border: 2px solid #1A1A1A;
+            background: var(--bg-tertiary);
+        }
+
+        .result-card {
+            text-align: center;
+            padding: 3rem;
+            border: 4px solid #1A1A1A;
+            margin-top: 2rem;
+        }
+
+        .result-card.passed {
+            background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+            border-color: var(--accent-green);
+        }
+
+        .result-card.failed {
+            background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
+            border-color: var(--accent-pink);
+        }
+
+        .score-display {
+            font-family: var(--font-mono);
+            font-size: 4rem;
+            font-weight: bold;
+            margin: 1rem 0;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">PB</div>
+                <span>Pro Bono</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Timer Bar -->
+    <div class="timer-bar" id="timerBar">
+        <div>
+            <strong id="quizTitle">Loading...</strong>
+            <span style="margin-left: 1rem; color: var(--text-secondary);">Question <span id="currentQ">1</span> of
+                <span id="totalQ">0</span></span>
+        </div>
+        <div class="timer" id="timer">--:--</div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main" style="margin-top: 80px;">
+        <div class="container quiz-container">
+            <!-- Loading State -->
+            <div class="empty-state" id="loadingState">
+                <div class="empty-state-icon">⏳</div>
+                <h3>Loading Quiz...</h3>
+            </div>
+
+            <!-- Quiz Content -->
+            <div id="quizContent" style="display: none;"></div>
+
+            <!-- Result (hidden until submit) -->
+            <div id="resultSection" style="display: none;"></div>
+        </div>
+    </main>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="app.js"></script>
+    <script>
+        let questions = [];
+        let currentQuestion = 0;
+        let answers = [];
+        let timeRemaining = 0;
+        let timerInterval = null;
+        let courseId = null;
+        let quizType = null;
+        let passingScore = 70;
+        let userEmail = null;
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            courseId = urlParams.get('courseId');
+            quizType = urlParams.get('type') || 'final';
+            const moduleId = urlParams.get('moduleId');
+
+            if (!courseId) {
+                alert('Invalid quiz URL');
+                window.location.href = 'certificate-courses.html';
+                return;
+            }
+
+            // Get user email
+            onAuthStateChanged(async (user) => {
+                if (!user) {
+                    alert('Please login to take quizzes.');
+                    window.location.href = 'certificate-courses.html';
+                    return;
+                }
+                userEmail = user.email;
+                await loadQuiz();
+            });
+        });
+
+        async function loadQuiz() {
+            const course = await getCertificateCourseByIdAsync(courseId);
+            if (!course) {
+                alert('Course not found');
+                window.location.href = 'certificate-courses.html';
+                return;
+            }
+
+            let quizData;
+            if (quizType === 'final') {
+                quizData = course.finalExam;
+                if (!quizData) {
+                    alert('No final exam found');
+                    window.location.href = `certificate-course.html?id=${courseId}`;
+                    return;
+                }
+            }
+
+            document.getElementById('quizTitle').textContent = quizData.title || 'Quiz';
+            questions = quizData.questions || [];
+            passingScore = quizData.passingScore || course.passingScore || 70;
+            timeRemaining = (quizData.timeLimit || 30) * 60; // Convert to seconds
+
+            if (questions.length === 0) {
+                document.getElementById('loadingState').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <h3>No Questions Available</h3>
+                        <p>This quiz doesn't have any questions yet.</p>
+                        <a href="certificate-course.html?id=${courseId}" class="btn btn-primary mt-md">← Back to Course</a>
+                    </div>
+                `;
+                return;
+            }
+
+            document.getElementById('totalQ').textContent = questions.length;
+            answers = new Array(questions.length).fill(null);
+
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('quizContent').style.display = 'block';
+
+            startTimer();
+            renderQuestion();
+        }
+
+        function startTimer() {
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                updateTimerDisplay();
+
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    submitQuiz();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            const timerEl = document.getElementById('timer');
+            timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+            timerEl.classList.remove('warning', 'danger');
+            if (timeRemaining <= 60) {
+                timerEl.classList.add('danger');
+            } else if (timeRemaining <= 300) {
+                timerEl.classList.add('warning');
+            }
+        }
+
+        function renderQuestion() {
+            const q = questions[currentQuestion];
+            document.getElementById('currentQ').textContent = currentQuestion + 1;
+
+            const content = document.getElementById('quizContent');
+            content.innerHTML = `
+                <div class="question-card">
+                    <div class="question-number">Question ${currentQuestion + 1} of ${questions.length}</div>
+                    <div class="question-text">${escapeHtml(q.question)}</div>
+                    <div class="options-list">
+                        ${q.options.map((opt, i) => `
+                            <button class="option-btn ${answers[currentQuestion] === i ? 'selected' : ''}" 
+                                    onclick="selectAnswer(${i})">
+                                <span class="option-letter">${String.fromCharCode(65 + i)}</span>
+                                <span>${escapeHtml(opt)}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <button class="btn" onclick="prevQuestion()" ${currentQuestion === 0 ? 'disabled' : ''}>← Previous</button>
+                    ${currentQuestion === questions.length - 1
+                    ? `<button class="btn btn-primary" onclick="submitQuiz()">Submit Quiz</button>`
+                    : `<button class="btn btn-primary" onclick="nextQuestion()">Next →</button>`
+                }
+                </div>
+            `;
+        }
+
+        function selectAnswer(index) {
+            answers[currentQuestion] = index;
+            renderQuestion();
+        }
+
+        function prevQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                renderQuestion();
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                renderQuestion();
+            }
+        }
+
+        async function submitQuiz() {
+            clearInterval(timerInterval);
+            document.getElementById('timerBar').style.display = 'none';
+            document.getElementById('quizContent').style.display = 'none';
+
+            // Calculate score
+            let correct = 0;
+            questions.forEach((q, i) => {
+                if (answers[i] === q.correctAnswer) {
+                    correct++;
+                }
+            });
+
+            const score = Math.round((correct / questions.length) * 100);
+            const passed = score >= passingScore;
+
+            // Show result
+            const resultSection = document.getElementById('resultSection');
+            resultSection.style.display = 'block';
+
+            if (passed) {
+                // Issue certificate
+                const userName = userEmail.split('@')[0]; // Simple name extraction
+                const cert = await issueCertificateAsync(courseId, userEmail, userName, score);
+
+                resultSection.innerHTML = `
+                    <div class="result-card passed">
+                        <h1>🎉 Congratulations!</h1>
+                        <div class="score-display">${score}%</div>
+                        <p style="font-size: 1.2rem;">You passed! (${correct}/${questions.length} correct)</p>
+                        
+                        <div style="margin-top: 2rem; padding: 1.5rem; background: white; border: 3px solid var(--accent-green);">
+                            <h3>🏆 Certificate Earned!</h3>
+                            <p style="font-family: var(--font-mono); font-size: 1.2rem; margin: 1rem 0;">
+                                ${cert ? cert.certificateId : 'Processing...'}
+                            </p>
+                            ${cert ? `<a href="verify-certificate.html?id=${cert.certificateId}" class="btn btn-primary">View Certificate</a>` : ''}
+                        </div>
+
+                        <h3 style="margin-top: 2rem;">Answer Key</h3>
+                        <div style="text-align: left; margin-top: 1rem;">
+                            ${questions.map((q, i) => `
+                                <div style="padding: 1rem; margin-bottom: 0.5rem; background: ${answers[i] === q.correctAnswer ? '#E8F5E9' : '#FFEBEE'}; border: 2px solid #1A1A1A;">
+                                    <strong>Q${i + 1}:</strong> ${escapeHtml(q.question)}<br>
+                                    <span style="color: ${answers[i] === q.correctAnswer ? 'green' : 'red'};">
+                                        Your answer: ${answers[i] !== null ? String.fromCharCode(65 + answers[i]) : 'No answer'}
+                                    </span>
+                                    <br><span style="color: green;">Correct: ${String.fromCharCode(65 + q.correctAnswer)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <a href="certificate-course.html?id=${courseId}" class="btn btn-primary mt-lg" style="width: 100%; justify-content: center;">
+                        Back to Course
+                    </a>
+                `;
+            } else {
+                resultSection.innerHTML = `
+                    <div class="result-card failed">
+                        <h1>📚 Keep Learning!</h1>
+                        <div class="score-display">${score}%</div>
+                        <p style="font-size: 1.2rem;">You need ${passingScore}% to pass. (${correct}/${questions.length} correct)</p>
+                        <p style="margin-top: 1rem; color: var(--text-secondary);">
+                            Review the course material and try again. The answer key is not shown for failed attempts.
+                        </p>
+                    </div>
+                    <a href="certificate-course.html?id=${courseId}" class="btn btn-primary mt-lg" style="width: 100%; justify-content: center;">
+                        Back to Course
+                    </a>
+                `;
+            }
+        }
+    </script>
+    <script src="theme.js"></script>
+</body>
+
+</html>

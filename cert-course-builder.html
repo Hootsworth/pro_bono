@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Build certificate courses with modules and quizzes">
+    <title>Certificate Course Builder | Pro Bono</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .builder-section {
+            border: 3px solid #1A1A1A;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            background: var(--bg-secondary);
+        }
+
+        .builder-section h3 {
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #1A1A1A;
+        }
+
+        .module-card {
+            border: 2px solid #1A1A1A;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: white;
+        }
+
+        .module-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .content-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: var(--bg-tertiary);
+            margin-bottom: 0.5rem;
+            border: 1px solid #ccc;
+        }
+
+        .quiz-preview {
+            padding: 1rem;
+            background: var(--accent-yellow);
+            border: 2px solid #1A1A1A;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">PB</div>
+                <span>Pro Bono</span>
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="admin-dashboard.html">← Back to Dashboard</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container" style="max-width: 900px;">
+            <h1 class="page-title" id="pageTitle">🏆 Create Certificate Course</h1>
+
+            <!-- Course Info Section -->
+            <div class="builder-section">
+                <h3>📋 Course Information</h3>
+                <input type="hidden" id="courseId">
+
+                <div class="form-group">
+                    <label class="form-label">Course Title *</label>
+                    <input type="text" id="courseTitle" class="form-input"
+                        placeholder="e.g., Web Development Fundamentals">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description *</label>
+                    <textarea id="courseDescription" class="form-textarea"
+                        placeholder="What will students learn in this course?"></textarea>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Passing Score (%)</label>
+                        <input type="number" id="passingScore" class="form-input" value="70" min="50" max="100">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select id="publishStatus" class="form-select">
+                            <option value="false">Draft</option>
+                            <option value="true">Published</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modules Section -->
+            <div class="builder-section">
+                <h3>📚 Course Modules</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">Each module can have content (videos,
+                    text, links) and an optional quiz.</p>
+
+                <div id="modulesList"></div>
+
+                <button class="btn btn-primary" onclick="addModule()">+ Add Module</button>
+            </div>
+
+            <!-- Final Exam Section -->
+            <div class="builder-section">
+                <h3>📝 Final Exam</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">Add a final exam that students must pass
+                    to earn the certificate.</p>
+
+                <div class="form-group">
+                    <label class="form-label">Exam Title</label>
+                    <input type="text" id="finalExamTitle" class="form-input" placeholder="e.g., Final Assessment">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Quiz Type</label>
+                        <select id="finalExamType" class="form-select">
+                            <option value="mcq">MCQ Quiz</option>
+                            <option value="flashcard">Flashcard Completion</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Time Limit (mins)</label>
+                        <input type="number" id="finalExamTime" class="form-input" value="30" min="5">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Passing Score (%)</label>
+                        <input type="number" id="finalExamPassScore" class="form-input" value="70" min="50" max="100">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Questions CSV</label>
+                    <input type="file" id="finalExamCsv" class="form-input" accept=".csv" onchange="previewFinalExam()">
+                    <small style="color: var(--text-secondary);">
+                        MCQ: Question, Option A, Option B, Option C, Option D, Correct (1-4)<br>
+                        Flashcard: Question, Answer
+                    </small>
+                </div>
+                <div id="finalExamPreview"></div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button class="btn" onclick="window.location.href='admin-dashboard.html'">Cancel</button>
+                <button class="btn btn-primary" onclick="saveCourse()">💾 Save Course</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Module Template (hidden) -->
+    <template id="moduleTemplate">
+        <div class="module-card" data-module-index="">
+            <div class="module-header">
+                <h4 style="margin: 0;">📦 Module <span class="module-number"></span></h4>
+                <button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.8rem;"
+                    onclick="removeModule(this)">Remove</button>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Module Title *</label>
+                <input type="text" class="form-input module-title" placeholder="e.g., Introduction">
+            </div>
+
+            <h5 style="margin: 1rem 0 0.5rem;">Content Items</h5>
+            <div class="content-list"></div>
+            <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                <button class="btn" style="padding: 4px 8px; font-size: 0.8rem;" onclick="addContent(this, 'video')">+
+                    Video</button>
+                <button class="btn" style="padding: 4px 8px; font-size: 0.8rem;" onclick="addContent(this, 'text')">+
+                    Text</button>
+                <button class="btn" style="padding: 4px 8px; font-size: 0.8rem;" onclick="addContent(this, 'link')">+
+                    Link</button>
+            </div>
+
+            <h5 style="margin: 1rem 0 0.5rem;">Module Quiz (Optional)</h5>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
+                <select class="form-select module-quiz-type" style="font-size: 0.85rem;">
+                    <option value="">No Quiz</option>
+                    <option value="mcq">MCQ</option>
+                    <option value="flashcard">Flashcard</option>
+                </select>
+                <input type="number" class="form-input module-quiz-time" placeholder="Time (mins)"
+                    style="font-size: 0.85rem;">
+                <input type="file" class="module-quiz-csv" accept=".csv" style="font-size: 0.85rem;">
+            </div>
+        </div>
+    </template>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="app.js"></script>
+    <script>
+        let moduleCount = 0;
+        let editingCourseId = null;
+
+        // Check authentication
+        onAuthStateChanged(async (user) => {
+            if (!user) {
+                window.location.href = 'admin.html';
+                return;
+            }
+
+            const adminInfo = await getCurrentAdminInfo();
+            if (!adminInfo || adminInfo.role !== 'superadmin') {
+                alert('Only super admin can create certificate courses.');
+                window.location.href = 'admin-dashboard.html';
+                return;
+            }
+
+            // Check if editing existing course
+            const urlParams = new URLSearchParams(window.location.search);
+            const courseId = urlParams.get('id');
+            if (courseId) {
+                await loadCourse(courseId);
+            }
+        });
+
+        async function loadCourse(courseId) {
+            const course = await getCertificateCourseByIdAsync(courseId);
+            if (!course) {
+                alert('Course not found');
+                window.location.href = 'admin-dashboard.html';
+                return;
+            }
+
+            editingCourseId = courseId;
+            document.getElementById('pageTitle').textContent = '🏆 Edit Certificate Course';
+            document.getElementById('courseId').value = courseId;
+            document.getElementById('courseTitle').value = course.title || '';
+            document.getElementById('courseDescription').value = course.description || '';
+            document.getElementById('passingScore').value = course.passingScore || 70;
+            document.getElementById('publishStatus').value = course.published ? 'true' : 'false';
+
+            // Load modules
+            if (course.modules) {
+                course.modules.forEach((mod, index) => {
+                    addModule();
+                    const moduleCard = document.querySelectorAll('.module-card')[index];
+                    moduleCard.querySelector('.module-title').value = mod.title || '';
+                    // Note: Content and quiz data would need more complex loading
+                });
+            }
+
+            // Load final exam if exists
+            if (course.finalExam) {
+                document.getElementById('finalExamTitle').value = course.finalExam.title || '';
+                document.getElementById('finalExamType').value = course.finalExam.type || 'mcq';
+                document.getElementById('finalExamTime').value = course.finalExam.timeLimit || 30;
+                document.getElementById('finalExamPassScore').value = course.finalExam.passingScore || 70;
+            }
+        }
+
+        function addModule() {
+            moduleCount++;
+            const template = document.getElementById('moduleTemplate');
+            const clone = template.content.cloneNode(true);
+
+            const card = clone.querySelector('.module-card');
+            card.dataset.moduleIndex = moduleCount;
+            card.querySelector('.module-number').textContent = moduleCount;
+
+            document.getElementById('modulesList').appendChild(clone);
+        }
+
+        function removeModule(btn) {
+            const card = btn.closest('.module-card');
+            card.remove();
+            updateModuleNumbers();
+        }
+
+        function updateModuleNumbers() {
+            const modules = document.querySelectorAll('.module-card');
+            modules.forEach((mod, index) => {
+                mod.querySelector('.module-number').textContent = index + 1;
+                mod.dataset.moduleIndex = index + 1;
+            });
+            moduleCount = modules.length;
+        }
+
+        function addContent(btn, type) {
+            const contentList = btn.closest('.module-card').querySelector('.content-list');
+            const item = document.createElement('div');
+            item.className = 'content-item';
+
+            let html = '';
+            if (type === 'video') {
+                html = `
+                    <span>📹</span>
+                    <input type="text" class="form-input" placeholder="YouTube URL" style="flex: 1; padding: 4px 8px;">
+                    <input type="text" class="form-input" placeholder="Video Title" style="flex: 1; padding: 4px 8px;">
+                `;
+            } else if (type === 'text') {
+                html = `
+                    <span>📄</span>
+                    <textarea class="form-textarea" placeholder="Enter text content..." style="flex: 1; min-height: 60px; padding: 4px 8px;"></textarea>
+                `;
+            } else if (type === 'link') {
+                html = `
+                    <span>🔗</span>
+                    <input type="text" class="form-input" placeholder="URL" style="flex: 1; padding: 4px 8px;">
+                    <input type="text" class="form-input" placeholder="Link Title" style="flex: 1; padding: 4px 8px;">
+                `;
+            }
+            html += `<button class="btn btn-danger" style="padding: 2px 6px;" onclick="this.parentElement.remove()">×</button>`;
+            item.innerHTML = html;
+            item.dataset.type = type;
+            contentList.appendChild(item);
+        }
+
+        function previewFinalExam() {
+            const file = document.getElementById('finalExamCsv').files[0];
+            const type = document.getElementById('finalExamType').value;
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const text = e.target.result;
+                let questions;
+                if (type === 'mcq') {
+                    questions = parseMCQCSV(text);
+                } else {
+                    questions = parseFlashcardCSV(text);
+                }
+                document.getElementById('finalExamPreview').innerHTML = `
+                    <div class="quiz-preview">
+                        <strong>✓ ${questions.length} questions loaded</strong>
+                    </div>
+                `;
+            };
+            reader.readAsText(file);
+        }
+
+        async function saveCourse() {
+            const title = document.getElementById('courseTitle').value.trim();
+            const description = document.getElementById('courseDescription').value.trim();
+            const passingScore = parseInt(document.getElementById('passingScore').value) || 70;
+            const published = document.getElementById('publishStatus').value === 'true';
+
+            if (!title || !description) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            // Collect modules
+            const modules = [];
+            document.querySelectorAll('.module-card').forEach((card, index) => {
+                const moduleTitle = card.querySelector('.module-title').value.trim();
+                if (!moduleTitle) return;
+
+                const content = [];
+                card.querySelectorAll('.content-item').forEach(item => {
+                    const type = item.dataset.type;
+                    if (type === 'video') {
+                        const inputs = item.querySelectorAll('input');
+                        content.push({ type: 'video', data: inputs[0].value, title: inputs[1].value });
+                    } else if (type === 'text') {
+                        content.push({ type: 'text', data: item.querySelector('textarea').value, title: 'Text Content' });
+                    } else if (type === 'link') {
+                        const inputs = item.querySelectorAll('input');
+                        content.push({ type: 'link', data: inputs[0].value, title: inputs[1].value });
+                    }
+                });
+
+                modules.push({
+                    id: 'mod_' + Date.now() + '_' + index,
+                    title: moduleTitle,
+                    order: index,
+                    content: content,
+                    quiz: null // Quiz handling would need file reading
+                });
+            });
+
+            // Prepare course data
+            const courseData = {
+                title,
+                description,
+                passingScore,
+                published,
+                modules
+            };
+
+            // Handle final exam
+            const finalExamTitle = document.getElementById('finalExamTitle').value.trim();
+            if (finalExamTitle) {
+                courseData.finalExam = {
+                    title: finalExamTitle,
+                    type: document.getElementById('finalExamType').value,
+                    timeLimit: parseInt(document.getElementById('finalExamTime').value) || 30,
+                    passingScore: parseInt(document.getElementById('finalExamPassScore').value) || 70,
+                    questions: [] // Would need file reading
+                };
+            }
+
+            let result;
+            if (editingCourseId) {
+                result = await updateCertificateCourseAsync(editingCourseId, courseData);
+            } else {
+                result = await createCertificateCourseAsync(courseData);
+            }
+
+            if (result) {
+                alert('Course saved successfully!');
+                window.location.href = 'admin-dashboard.html';
+            } else {
+                alert('Error saving course. Please try again.');
+            }
+        }
+    </script>
+    <script src="theme.js"></script>
+</body>
+
+</html>

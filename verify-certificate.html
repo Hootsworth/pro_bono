@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Verify Pro Bono certificate authenticity">
+    <title>Verify Certificate | Pro Bono</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .certificate-display {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 2rem;
+            border: 4px solid #1A1A1A;
+            background: linear-gradient(135deg, #FFFEF2 0%, #FFF4E0 100%);
+            box-shadow: 8px 8px 0 #1A1A1A;
+            text-align: center;
+        }
+
+        .certificate-display.valid {
+            border-color: var(--accent-green);
+        }
+
+        .certificate-display.invalid {
+            border-color: var(--accent-pink);
+            background: #FFE8E8;
+        }
+
+        .cert-badge {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1rem;
+            background: var(--accent-purple);
+            border: 4px solid #1A1A1A;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+        }
+
+        .cert-title {
+            font-family: var(--font-mono);
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .cert-id {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border: 2px solid #1A1A1A;
+            display: inline-block;
+            margin: 1rem 0;
+        }
+
+        .cert-details {
+            text-align: left;
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: white;
+            border: 2px solid #1A1A1A;
+        }
+
+        .cert-details p {
+            margin: 0.5rem 0;
+            font-size: 0.95rem;
+        }
+
+        .cert-details strong {
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">PB</div>
+                <span>Pro Bono</span>
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Courses</a></li>
+                    <li><a href="certificate-courses.html">Certificates</a></li>
+                    <li><a href="us.html">Us</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <h1 class="page-title" style="text-align: center; border: none;">🔍 Verify Certificate</h1>
+
+            <!-- Search Form -->
+            <div style="max-width: 500px; margin: 2rem auto;">
+                <div class="form-group">
+                    <label class="form-label">Certificate ID</label>
+                    <input type="text" id="certIdInput" class="form-input" placeholder="e.g., PB-CERT-ABC12345"
+                        style="text-align: center; font-family: var(--font-mono); text-transform: uppercase;">
+                </div>
+                <button class="btn btn-primary" id="verifyBtn" style="width: 100%; justify-content: center;">
+                    Verify Certificate
+                </button>
+            </div>
+
+            <!-- Result -->
+            <div id="result" style="margin-top: 2rem;"></div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-content">
+            <div class="footer-left">
+                <div class="footer-logo">
+                    <div class="logo-icon" style="width: 32px; height: 32px; font-size: 1rem;">PB</div>
+                    <span>Pro Bono</span>
+                </div>
+            </div>
+            <p style="font-family: var(--font-mono); font-size: 0.9rem;">© 2025 Pro Bono • Certificate Verification</p>
+        </div>
+    </footer>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="app.js"></script>
+    <script>
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatDate(timestamp) {
+            if (!timestamp) return 'N/A';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        // Check URL for certificate ID
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const certId = urlParams.get('id');
+            if (certId) {
+                document.getElementById('certIdInput').value = certId;
+                verifyCertificate(certId);
+            }
+        });
+
+        document.getElementById('verifyBtn').addEventListener('click', () => {
+            const certId = document.getElementById('certIdInput').value.trim().toUpperCase();
+            if (!certId) {
+                alert('Please enter a Certificate ID');
+                return;
+            }
+            verifyCertificate(certId);
+        });
+
+        async function verifyCertificate(certId) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⏳</div><h3>Verifying...</h3></div>';
+
+            const result = await verifyCertificateAsync(certId);
+
+            if (result.valid) {
+                resultDiv.innerHTML = `
+                    <div class="certificate-display valid">
+                        <div class="cert-badge">✓</div>
+                        <h2 class="cert-title">Certificate Verified!</h2>
+                        <div class="cert-id">${escapeHtml(result.certificateId)}</div>
+                        
+                        <div class="cert-details">
+                            <p><strong>Holder:</strong> ${escapeHtml(result.userName)}</p>
+                            <p><strong>Email:</strong> ${escapeHtml(result.userEmail)}</p>
+                            <p><strong>Course:</strong> ${escapeHtml(result.courseTitle)}</p>
+                            <p><strong>Score:</strong> ${result.score}%</p>
+                            <p><strong>Issue Date:</strong> ${formatDate(result.issueDate)}</p>
+                        </div>
+                        
+                        <p style="margin-top: 1rem; color: var(--accent-green); font-weight: bold;">
+                            ✅ This is a valid Pro Bono certificate
+                        </p>
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="certificate-display invalid">
+                        <div class="cert-badge" style="background: var(--accent-pink);">✗</div>
+                        <h2 class="cert-title">Certificate Not Found</h2>
+                        <p style="color: var(--text-secondary);">
+                            The certificate ID "${escapeHtml(certId)}" does not exist in our database.
+                        </p>
+                        <p style="margin-top: 1rem; color: var(--accent-pink); font-weight: bold;">
+                            ⚠️ This certificate could not be verified
+                        </p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+    <script src="theme.js"></script>
+</body>
+
+</html>

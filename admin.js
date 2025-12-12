@@ -44,6 +44,7 @@ async function initializeAdmin() {
         document.getElementById('universitiesNavItem').style.display = 'block';
         document.getElementById('adminsNavItem').style.display = 'block';
         document.getElementById('applicationsNavItem').style.display = 'block';
+        document.getElementById('certCoursesNavItem').style.display = 'block';
     } else {
         roleBadge.textContent = '🛡️ Admin Lite';
         roleBadge.style.background = 'var(--accent-cyan)';
@@ -204,6 +205,7 @@ function showView(viewName) {
     document.getElementById('eventsView').style.display = 'none';
     document.getElementById('adminsView').style.display = 'none';
     document.getElementById('applicationsView').style.display = 'none';
+    document.getElementById('certCoursesView').style.display = 'none';
 
     // Remove active class from nav
     document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
@@ -226,6 +228,7 @@ function showView(viewName) {
     }
     if (viewName === 'admins') renderAdminsList();
     if (viewName === 'applications') renderApplicationsList();
+    if (viewName === 'certCourses') renderCertCoursesList();
 }
 
 // ===== Courses Table =====
@@ -1459,3 +1462,63 @@ async function confirmDeleteEvent(eventId) {
         await renderEventsList();
     }
 }
+
+// ===== Certificate Courses Management =====
+let cachedCertCourses = [];
+
+async function renderCertCoursesList() {
+    cachedCertCourses = await getCertificateCoursesAsync();
+    const list = document.getElementById('certCoursesList');
+    const emptyState = document.getElementById('certCoursesEmpty');
+
+    if (cachedCertCourses.length === 0) {
+        list.style.display = 'none';
+        emptyState.style.display = 'block';
+        return;
+    }
+
+    list.style.display = 'flex';
+    emptyState.style.display = 'none';
+
+    list.innerHTML = cachedCertCourses.map(course => `
+    <div class="resource-item" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+      <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+        <div class="resource-info">
+          <div class="resource-icon" style="background: var(--accent-purple);">🏆</div>
+          <div>
+            <span class="resource-title" style="font-size: 1.1rem;">${escapeHtml(course.title)}</span>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">
+              ${course.modules?.length || 0} Modules • Passing: ${course.passingScore}%
+              ${course.published ? '<span style="color: var(--accent-green);">✓ Published</span>' : '<span style="color: var(--accent-orange);">Draft</span>'}
+            </p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="window.location.href='cert-course-builder.html?id=${course.id}'">Edit Course</button>
+          <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.85rem;" onclick="confirmDeleteCertCourse('${course.id}', '${escapeHtml(course.title)}')">Delete</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function confirmDeleteCertCourse(courseId, title) {
+    if (confirm(`Delete certificate course "${title}"? This cannot be undone.`)) {
+        const result = await deleteCertificateCourseAsync(courseId);
+        if (result) {
+            await renderCertCoursesList();
+        } else {
+            alert('Error deleting course.');
+        }
+    }
+}
+
+// Event listener for Add Certificate Course button
+document.addEventListener('DOMContentLoaded', () => {
+    const addBtn = document.getElementById('addCertCourseBtn');
+    if (addBtn) {
+        addBtn.addEventListener('click', () => {
+            window.location.href = 'cert-course-builder.html';
+        });
+    }
+});

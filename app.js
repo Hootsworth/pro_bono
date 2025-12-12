@@ -906,3 +906,272 @@ function getSelectedUniversity() {
 function setSelectedUniversity(universityId) {
   localStorage.setItem('selectedUniversity', universityId);
 }
+
+// ===== Certificate Courses =====
+const CERT_COURSES_COLLECTION = 'certificateCourses';
+const USER_PROGRESS_COLLECTION = 'userProgress';
+const CERTIFICATES_COLLECTION = 'certificates';
+
+// Generate unique certificate ID
+function generateCertificateId() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let id = 'PB-CERT-';
+  for (let i = 0; i < 8; i++) {
+    id += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return id;
+}
+
+// Get all certificate courses
+async function getCertificateCoursesAsync() {
+  try {
+    const snapshot = await firebaseDb.collection(CERT_COURSES_COLLECTION)
+      .orderBy('createdAt', 'desc')
+      .get();
+    const courses = [];
+    snapshot.forEach(doc => {
+      courses.push({ id: doc.id, ...doc.data() });
+    });
+    return courses;
+  } catch (error) {
+    console.error('Error fetching certificate courses:', error);
+    return [];
+  }
+}
+
+// Get single certificate course
+async function getCertificateCourseByIdAsync(courseId) {
+  try {
+    const doc = await firebaseDb.collection(CERT_COURSES_COLLECTION).doc(courseId).get();
+    if (doc.exists) {
+      return { id: doc.id, ...doc.data() };
+    }
+    return null;
+  } catch (error) {
+    console.error('Error fetching certificate course:', error);
+    return null;
+  }
+}
+
+// Create certificate course (Super Admin only)
+async function createCertificateCourseAsync(courseData) {
+  if (!isSuperAdmin()) {
+    console.error('Only super admin can create certificate courses');
+    return null;
+  }
+
+  try {
+    const newCourse = {
+      title: courseData.title,
+      description: courseData.description,
+      thumbnail: courseData.thumbnail || '',
+      passingScore: courseData.passingScore || 70,
+      certificateEnabled: courseData.certificateEnabled !== false,
+      modules: [], // Will be populated separately
+      finalExam: null,
+      createdBy: firebaseAuth.currentUser.email,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      published: false
+    };
+
+    const docRef = await firebaseDb.collection(CERT_COURSES_COLLECTION).add(newCourse);
+    return { id: docRef.id, ...newCourse };
+  } catch (error) {
+    console.error('Error creating certificate course:', error);
+    return null;
+  }
+}
+
+// Update certificate course
+async function updateCertificateCourseAsync(courseId, updates) {
+  if (!isSuperAdmin()) {
+    console.error('Only super admin can update certificate courses');
+    return false;
+  }
+
+  try {
+    await firebaseDb.collection(CERT_COURSES_COLLECTION).doc(courseId).update({
+      ...updates,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    return true;
+  } catch (error) {
+    console.error('Error updating certificate course:', error);
+    return false;
+  }
+}
+
+// Delete certificate course
+async function deleteCertificateCourseAsync(courseId) {
+  if (!isSuperAdmin()) {
+    console.error('Only super admin can delete certificate courses');
+    return false;
+  }
+
+  try {
+    await firebaseDb.collection(CERT_COURSES_COLLECTION).doc(courseId).delete();
+    return true;
+  } catch (error) {
+    console.error('Error deleting certificate course:', error);
+    return false;
+  }
+}
+
+// Add module to certificate course
+async function addModuleToCertCourseAsync(courseId, moduleData) {
+  try {
+    const course = await getCertificateCourseByIdAsync(courseId);
+    if (!course) return null;
+
+    const newModule = {
+      id: 'mod_' + Date.now(),
+      title: moduleData.title,
+      order: course.modules.length,
+      content: moduleData.content || [],
+      quiz: moduleData.quiz || null
+    };
+
+    course.modules.push(newModule);
+    await updateCertificateCourseAsync(courseId, { modules: course.modules });
+    return newModule;
+  } catch (error) {
+    console.error('Error adding module:', error);
+    return null;
+  }
+}
+
+// Parse MCQ CSV (Question, Option A, B, C, D, Correct Answer Index)
+function parseMCQCSV(csvText) {
+  const lines = csvText.split(/\r?\n/);
+  const questions = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    const values = parseCSVLine(line);
+    if (values.length >= 6) {
+      const question = values[0].trim();
+      const options = [
+        values[1].trim(),
+        values[2].trim(),
+        values[3].trim(),
+        values[4].trim()
+      ];
+      const correctAnswer = parseInt(values[5].trim()) - 1; // Convert 1-4 to 0-3 index
+
+      if (question && options.every(o => o) && correctAnswer >= 0 && correctAnswer <= 3) {
+        questions.push({
+          id: 'q_' + Date.now() + '_' + i,
+          question,
+          options,
+          correctAnswer
+        });
+      }
+    }
+  }
+
+  return questions;
+}
+
+// ===== User Progress Tracking =====
+
+// Get user progress for a certificate course
+async function getUserProgressAsync(courseId, userEmail) {
+  try {
+    const progressId = `${courseId}_${userEmail.replace(/[^a-zA-Z0-9]/g, '_')}`;
+    const doc = await firebaseDb.collection(USER_PROGRESS_COLLECTION).doc(progressId).get();
+
+    if (doc.exists) {
+      return { id: doc.id, ...doc.data() };
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting user progress:', error);
+    return null;
+  }
+}
+
+// Initialize or update user progress
+async function updateUserProgressAsync(courseId, userEmail, progressData) {
+  try {
+    const progressId = `${courseId}_${userEmail.replace(/[^a-zA-Z0-9]/g, '_')}`;
+    await firebaseDb.collection(USER_PROGRESS_COLLECTION).doc(progressId).set({
+      courseId,
+      userEmail,
+      ...progressData,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    return true;
+  } catch (error) {
+    console.error('Error updating user progress:', error);
+    return false;
+  }
+}
+
+// ===== Certificate Generation =====
+
+// Issue certificate to user
+async function issueCertificateAsync(courseId, userEmail, userName, score) {
+  try {
+    const course = await getCertificateCourseByIdAsync(courseId);
+    if (!course) return null;
+
+    const certificateId = generateCertificateId();
+    const certificate = {
+      certificateId,
+      courseId,
+      courseTitle: course.title,
+      userEmail,
+      userName,
+      score,
+      issueDate: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    await firebaseDb.collection(CERTIFICATES_COLLECTION).doc(certificateId).set(certificate);
+
+    // Update user progress
+    await updateUserProgressAsync(courseId, userEmail, {
+      certificateIssued: true,
+      certificateId
+    });
+
+    return certificate;
+  } catch (error) {
+    console.error('Error issuing certificate:', error);
+    return null;
+  }
+}
+
+// Verify certificate by ID
+async function verifyCertificateAsync(certificateId) {
+  try {
+    const doc = await firebaseDb.collection(CERTIFICATES_COLLECTION).doc(certificateId).get();
+    if (doc.exists) {
+      return { id: doc.id, ...doc.data(), valid: true };
+    }
+    return { valid: false };
+  } catch (error) {
+    console.error('Error verifying certificate:', error);
+    return { valid: false, error: error.message };
+  }
+}
+
+// Get all certificates for a user
+async function getUserCertificatesAsync(userEmail) {
+  try {
+    const snapshot = await firebaseDb.collection(CERTIFICATES_COLLECTION)
+      .where('userEmail', '==', userEmail)
+      .orderBy('issueDate', 'desc')
+      .get();
+
+    const certificates = [];
+    snapshot.forEach(doc => {
+      certificates.push({ id: doc.id, ...doc.data() });
+    });
+    return certificates;
+  } catch (error) {
+    console.error('Error fetching user certificates:', error);
+    return [];
+  }
+}

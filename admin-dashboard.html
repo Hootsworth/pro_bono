@@ -53,6 +53,8 @@
                         onclick="showView('admins')">👥 Admin Lites</a></li>
                 <li id="applicationsNavItem" style="display: none;"><a href="#" data-view="applications"
                         onclick="showView('applications')">📋 Applications</a></li>
+                <li id="certCoursesNavItem" style="display: none;"><a href="#" data-view="certCourses"
+                        onclick="showView('certCourses')">🏆 Certificate Courses</a></li>
             </ul>
             <div class="mt-lg" style="padding-top: var(--space-md); border-top: var(--border-thin);">
                 <p style="font-size: 0.85rem; color: var(--text-secondary);">
@@ -260,6 +262,24 @@
                     <div class="empty-state-icon">📋</div>
                     <h3>No Pending Applications</h3>
                     <p>New applications will appear here.</p>
+                </div>
+            </div>
+
+            <!-- Certificate Courses View (Super Admin Only) -->
+            <div id="certCoursesView" style="display: none;">
+                <div class="admin-header">
+                    <h1>🏆 Certificate Courses</h1>
+                    <button class="btn btn-primary" id="addCertCourseBtn">+ Create New Course</button>
+                </div>
+                <p class="mb-md" style="color: var(--text-secondary);">Create certificate courses with modules, quizzes,
+                    and auto-generated certificates.</p>
+
+                <div id="certCoursesList" class="resource-list"></div>
+
+                <div class="empty-state" id="certCoursesEmpty" style="display: none;">
+                    <div class="empty-state-icon">🏆</div>
+                    <h3>No Certificate Courses Yet</h3>
+                    <p>Create your first certificate course with modules and quizzes.</p>
                 </div>
             </div>
         </main>

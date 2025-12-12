@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Browse certificate courses and earn certifications">
+    <title>Certificate Courses | Pro Bono</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">PB</div>
+                <span>Pro Bono</span>
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Courses</a></li>
+                    <li><a href="certificate-courses.html"
+                            style="background: var(--text-primary); color: var(--bg-primary);">Certificates</a></li>
+                    <li><a href="calendar.html">Calendar</a></li>
+                    <li><a href="us.html">Us</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" style="background: linear-gradient(135deg, var(--accent-purple) 0%, #8B5CF6 100%);">
+        <div class="container">
+            <h1>🏆 Certificate Courses</h1>
+            <p style="color: white;">Complete courses, pass quizzes, and earn verified certificates!</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <!-- Loading State -->
+            <div class="empty-state" id="loadingState">
+                <div class="empty-state-icon">⏳</div>
+                <h3>Loading Courses...</h3>
+            </div>
+
+            <!-- Courses Grid -->
+            <div id="coursesGrid" class="course-grid" style="display: none;"></div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <div class="empty-state-icon">🏆</div>
+                <h3>No Certificate Courses Yet</h3>
+                <p>Check back later for exciting certificate courses!</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-content">
+            <div class="footer-left">
+                <div class="footer-logo">
+                    <div class="logo-icon" style="width: 32px; height: 32px; font-size: 1rem;">PB</div>
+                    <span>Pro Bono</span>
+                </div>
+                <ul class="footer-links">
+                    <li><a href="us.html">About Us</a></li>
+                    <li><a href="verify-certificate.html">Verify Certificate</a></li>
+                </ul>
+            </div>
+            <p style="font-family: var(--font-mono); font-size: 0.9rem;">© 2025 Pro Bono • Built with Neo Brutalism</p>
+        </div>
+    </footer>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="app.js"></script>
+    <script>
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const courses = await getCertificateCoursesAsync();
+
+            document.getElementById('loadingState').style.display = 'none';
+
+            // Filter only published courses
+            const publishedCourses = courses.filter(c => c.published);
+
+            if (publishedCourses.length === 0) {
+                document.getElementById('emptyState').style.display = 'block';
+                return;
+            }
+
+            const grid = document.getElementById('coursesGrid');
+            grid.style.display = 'grid';
+
+            grid.innerHTML = publishedCourses.map(course => `
+                <div class="card course-card" onclick="window.location.href='certificate-course.html?id=${course.id}'" style="cursor: pointer;">
+                    <div class="card-header" style="background: var(--accent-purple);"></div>
+                    <h3 class="card-title">🏆 ${escapeHtml(course.title)}</h3>
+                    <p class="card-description">${escapeHtml(course.description)}</p>
+                    <div class="card-meta">
+                        <span class="tag">📚 ${course.modules?.length || 0} Modules</span>
+                        <span class="tag">✅ ${course.passingScore}% to Pass</span>
+                    </div>
+                    <button class="btn btn-primary mt-md" style="width: 100%; justify-content: center;">
+                        Start Course →
+                    </button>
+                </div>
+            `).join('');
+        });
+    </script>
+    <script src="theme.js"></script>
+</body>
+
+</html>

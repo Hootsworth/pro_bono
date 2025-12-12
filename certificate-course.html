@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Take certificate course and earn certification">
+    <title>Certificate Course | Pro Bono</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .course-hero {
+            background: linear-gradient(135deg, var(--accent-purple) 0%, #8B5CF6 100%);
+            padding: 3rem 0;
+            border-bottom: 4px solid #1A1A1A;
+            color: white;
+        }
+
+        .course-hero h1 {
+            color: white;
+        }
+
+        .course-hero p {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .module-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .module-item {
+            border: 3px solid #1A1A1A;
+            background: white;
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .module-item:hover {
+            transform: translateX(4px);
+            box-shadow: 4px 4px 0 #1A1A1A;
+        }
+
+        .module-item.completed {
+            border-left: 6px solid var(--accent-green);
+        }
+
+        .module-item.locked {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .module-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .module-status {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            padding: 4px 10px;
+            border: 2px solid #1A1A1A;
+        }
+
+        .module-status.completed {
+            background: var(--accent-green);
+        }
+
+        .module-status.in-progress {
+            background: var(--accent-yellow);
+        }
+
+        .module-status.locked {
+            background: #ccc;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: #ddd;
+            border: 2px solid #1A1A1A;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-green);
+            transition: width 0.3s ease;
+        }
+
+        .final-exam-card {
+            background: var(--accent-yellow);
+            border: 4px solid #1A1A1A;
+            padding: 2rem;
+            text-align: center;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">PB</div>
+                <span>Pro Bono</span>
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="certificate-courses.html">← Back to Courses</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Course Hero -->
+    <section class="course-hero">
+        <div class="container">
+            <h1 id="courseTitle">Loading...</h1>
+            <p id="courseDescription"></p>
+            <div style="margin-top: 1rem;">
+                <span class="badge" style="background: white; color: #1A1A1A;">📚 <span id="moduleCount">0</span>
+                    Modules</span>
+                <span class="badge" style="background: white; color: #1A1A1A; margin-left: 0.5rem;">🎯 <span
+                        id="passingScore">70</span>% to Pass</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container" style="max-width: 800px;">
+            <!-- Progress -->
+            <div style="margin-bottom: 2rem;">
+                <h3 style="margin-bottom: 0.5rem;">Your Progress</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+                <p style="font-family: var(--font-mono); font-size: 0.9rem;" id="progressText">0% Complete</p>
+            </div>
+
+            <!-- Modules List -->
+            <h2 style="margin-bottom: 1rem;">📚 Course Modules</h2>
+            <div class="module-list" id="modulesList">
+                <!-- Dynamic content -->
+            </div>
+
+            <!-- Final Exam Card -->
+            <div class="final-exam-card" id="finalExamCard" style="display: none;">
+                <h2>🏆 Final Exam</h2>
+                <p style="margin: 1rem 0;" id="finalExamInfo">Complete all modules to unlock the final exam.</p>
+                <button class="btn btn-primary" id="startFinalExam" disabled>Start Final Exam</button>
+            </div>
+
+            <!-- Certificate Section (shown after passing) -->
+            <div id="certificateSection" style="display: none; margin-top: 2rem;">
+                <div
+                    style="text-align: center; padding: 2rem; border: 4px solid var(--accent-green); background: #E8F5E9;">
+                    <h2>🎉 Congratulations!</h2>
+                    <p>You have successfully completed this course.</p>
+                    <p style="margin: 1rem 0;"><strong>Certificate ID:</strong> <span id="certIdDisplay"></span></p>
+                    <button class="btn btn-primary" onclick="viewCertificate()">View Certificate</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-content">
+            <div class="footer-left">
+                <div class="footer-logo">
+                    <div class="logo-icon" style="width: 32px; height: 32px; font-size: 1rem;">PB</div>
+                    <span>Pro Bono</span>
+                </div>
+            </div>
+            <p style="font-family: var(--font-mono); font-size: 0.9rem;">© 2025 Pro Bono</p>
+        </div>
+    </footer>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="app.js"></script>
+    <script>
+        let currentCourse = null;
+        let userProgress = null;
+        let userEmail = null;
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const courseId = urlParams.get('id');
+
+            if (!courseId) {
+                window.location.href = 'certificate-courses.html';
+                return;
+            }
+
+            // Load course
+            currentCourse = await getCertificateCourseByIdAsync(courseId);
+            if (!currentCourse) {
+                alert('Course not found');
+                window.location.href = 'certificate-courses.html';
+                return;
+            }
+
+            // Display course info
+            document.getElementById('courseTitle').textContent = currentCourse.title;
+            document.getElementById('courseDescription').textContent = currentCourse.description;
+            document.getElementById('moduleCount').textContent = currentCourse.modules?.length || 0;
+            document.getElementById('passingScore').textContent = currentCourse.passingScore || 70;
+
+            // Check if user is logged in for progress tracking
+            onAuthStateChanged(async (user) => {
+                if (user) {
+                    userEmail = user.email;
+                    userProgress = await getUserProgressAsync(courseId, userEmail);
+                }
+                renderModules();
+                updateProgress();
+            });
+
+            // Show final exam card if exists
+            if (currentCourse.finalExam) {
+                document.getElementById('finalExamCard').style.display = 'block';
+            }
+        });
+
+        function renderModules() {
+            const list = document.getElementById('modulesList');
+            if (!currentCourse.modules || currentCourse.modules.length === 0) {
+                list.innerHTML = '<p>No modules available yet.</p>';
+                return;
+            }
+
+            list.innerHTML = currentCourse.modules.map((module, index) => {
+                const isCompleted = userProgress?.moduleProgress?.[module.id]?.completed;
+                const isLocked = index > 0 && !userProgress?.moduleProgress?.[currentCourse.modules[index - 1].id]?.completed;
+
+                let statusClass = 'in-progress';
+                let statusText = 'Start';
+                if (isCompleted) {
+                    statusClass = 'completed';
+                    statusText = '✓ Completed';
+                } else if (isLocked && userEmail) {
+                    statusClass = 'locked';
+                    statusText = '🔒 Locked';
+                }
+
+                return `
+                    <div class="module-item ${isCompleted ? 'completed' : ''} ${isLocked && userEmail ? 'locked' : ''}" 
+                         onclick="${!isLocked || !userEmail ? `openModule('${module.id}')` : ''}">
+                        <div class="module-header">
+                            <div>
+                                <h3 style="margin: 0;">${index + 1}. ${escapeHtml(module.title)}</h3>
+                                <p style="margin: 0.5rem 0 0; font-size: 0.9rem; color: var(--text-secondary);">
+                                    ${module.content?.length || 0} items
+                                    ${module.quiz ? ' • Quiz included' : ''}
+                                </p>
+                            </div>
+                            <span class="module-status ${statusClass}">${statusText}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateProgress() {
+            if (!userProgress || !currentCourse.modules) {
+                document.getElementById('progressFill').style.width = '0%';
+                document.getElementById('progressText').textContent = '0% Complete';
+                return;
+            }
+
+            const totalModules = currentCourse.modules.length;
+            let completedModules = 0;
+
+            currentCourse.modules.forEach(mod => {
+                if (userProgress.moduleProgress?.[mod.id]?.completed) {
+                    completedModules++;
+                }
+            });
+
+            const percentage = totalModules > 0 ? Math.round((completedModules / totalModules) * 100) : 0;
+            document.getElementById('progressFill').style.width = percentage + '%';
+            document.getElementById('progressText').textContent = `${percentage}% Complete (${completedModules}/${totalModules} modules)`;
+
+            // Enable final exam if all modules completed
+            if (completedModules === totalModules && currentCourse.finalExam) {
+                document.getElementById('startFinalExam').disabled = false;
+                document.getElementById('finalExamInfo').textContent = 'You\'re ready to take the final exam!';
+                document.getElementById('startFinalExam').onclick = () => {
+                    window.location.href = `quiz.html?courseId=${currentCourse.id}&type=final`;
+                };
+            }
+
+            // Show certificate if earned
+            if (userProgress.certificateIssued && userProgress.certificateId) {
+                document.getElementById('certificateSection').style.display = 'block';
+                document.getElementById('certIdDisplay').textContent = userProgress.certificateId;
+            }
+        }
+
+        function openModule(moduleId) {
+            if (!userEmail) {
+                alert('Please login to track your progress and earn certificates.');
+                return;
+            }
+            // In a full implementation, this would open a module viewer
+            // For now, we'll mark it as complete for demo purposes
+            alert('Module content viewer would open here. For this demo, the module will be marked as complete.');
+            markModuleComplete(moduleId);
+        }
+
+        async function markModuleComplete(moduleId) {
+            if (!userEmail) return;
+
+            const moduleProgress = userProgress?.moduleProgress || {};
+            moduleProgress[moduleId] = { completed: true, completedAt: new Date().toISOString() };
+
+            await updateUserProgressAsync(currentCourse.id, userEmail, { moduleProgress });
+            userProgress = await getUserProgressAsync(currentCourse.id, userEmail);
+            renderModules();
+            updateProgress();
+        }
+
+        function viewCertificate() {
+            if (userProgress?.certificateId) {
+                window.location.href = `verify-certificate.html?id=${userProgress.certificateId}`;
+            }
+        }
+    </script>
+    <script src="theme.js"></script>
+</body>
+
+</html>
