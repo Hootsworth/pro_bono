@@ -65,6 +65,28 @@ async function initializeAdmin() {
 
     // Populate major dropdowns
     populateMajorDropdowns();
+
+    // Populate subject dropdowns
+    await populateSubjectDropdowns();
+}
+
+// Populate subject dropdowns with data from Firestore
+async function populateSubjectDropdowns() {
+    const courseSubjectSelect = document.getElementById('courseSubject');
+    if (!courseSubjectSelect) return;
+
+    // Clear existing options except first
+    courseSubjectSelect.innerHTML = '<option value="">Select Subject</option>';
+
+    // Fetch subjects from Firestore
+    const subjects = await getSubjectsAsync();
+
+    subjects.forEach(subject => {
+        const option = document.createElement('option');
+        option.value = subject.name;
+        option.textContent = subject.name;
+        courseSubjectSelect.appendChild(option);
+    });
 }
 
 function populateMajorDropdowns() {
@@ -447,6 +469,7 @@ async function saveSubject() {
     if (result) {
         closeSubjectModal();
         await renderSubjectsList();
+        await populateSubjectDropdowns();
     } else {
         alert('Error creating subject.');
     }

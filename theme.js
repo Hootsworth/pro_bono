@@ -35,7 +35,7 @@
         }
     }
 
-    // Create and inject the theme toggle button if it doesn't exist
+    // Create and inject the theme toggle button into the header
     function createThemeToggle() {
         if (!document.getElementById('themeToggle')) {
             const toggle = document.createElement('button');
@@ -43,7 +43,17 @@
             toggle.className = 'theme-toggle';
             toggle.setAttribute('aria-label', 'Toggle dark mode');
             toggle.textContent = '🌙';
-            document.body.appendChild(toggle);
+
+            // Try to inject into header nav
+            const navLinks = document.querySelector('.nav-links');
+            if (navLinks) {
+                const li = document.createElement('li');
+                li.appendChild(toggle);
+                navLinks.appendChild(li);
+            } else {
+                // Fallback to body if no header nav found
+                document.body.appendChild(toggle);
+            }
         }
     }
 
