@@ -60,9 +60,6 @@
     <div class="container">
       <h1>📚 Pro Bono</h1>
       <p>Your free gateway to quality education. Access courses, video lectures, question papers, and problem sets.</p>
-      <a href="apply-admin.html" class="btn btn-secondary mt-md" style="display: inline-flex;">
-        🛡️ Apply for Admin Access
-      </a>
     </div>
   </section>
 
@@ -140,7 +137,12 @@
         <div class="logo-icon" style="width: 32px; height: 32px; font-size: 1rem;">PB</div>
         <span>Pro Bono</span>
       </div>
-      <p style="font-family: var(--font-mono); font-size: 0.9rem;">© 2025 Pro Bono • Built with Neo Brutalism</p>
+      <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
+        <p style="font-family: var(--font-mono); font-size: 0.9rem;">© 2025 Pro Bono • Built with Neo Brutalism</p>
+        <a href="apply-admin.html" class="apply-admin-link">
+          🔑 Apply for Admin Access
+        </a>
+      </div>
     </div>
   </footer>
 
@@ -351,6 +353,7 @@
       return div.innerHTML;
     }
   </script>
+  <script src="theme.js"></script>
 </body>
 
 </html>

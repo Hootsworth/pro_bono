@@ -59,6 +59,360 @@
   --transition-bounce: 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
+/* ===== Dark Mode Variables ===== */
+[data-theme="dark"] {
+  /* Colors */
+  --bg-primary: #1A1A1A;
+  --bg-secondary: #252525;
+  --bg-tertiary: #2D2D2D;
+  --text-primary: #F5F5F5;
+  --text-secondary: #B0B0B0;
+  --text-muted: #858585;
+  --border-color: #F5F5F5;
+
+  /* Slightly adjusted accent colors for dark mode */
+  --accent-yellow: #FFD93D;
+  --accent-green: #6BCB77;
+  --accent-pink: #FF6B9D;
+  --accent-purple: #A66CFF;
+  --accent-orange: #FF9F45;
+  --accent-cyan: #4ECDC4;
+  --accent-blue: #5B8DEE;
+  --accent-red: #FF6B6B;
+
+  /* Gradients for dark mode */
+  --gradient-yellow: linear-gradient(135deg, #FFD93D 0%, #FFED4A 100%);
+  --gradient-green: linear-gradient(135deg, #6BCB77 0%, #8EE89A 100%);
+  --gradient-pink: linear-gradient(135deg, #FF6B9D 0%, #FF8FB1 100%);
+}
+
+/* Dark mode transitions */
+body,
+.header,
+.card,
+.btn,
+.form-input,
+.form-textarea,
+.form-select,
+.nav-links a,
+.modal,
+.modal-header,
+.admin-sidebar,
+.admin-table,
+.footer,
+.toast,
+.filter-pill,
+.search-input,
+.resource-item,
+.tag,
+.badge,
+.stats-bar,
+.login-card {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Dark mode specific overrides */
+[data-theme="dark"] .header {
+  background: #2D2D2D;
+  border-bottom-color: var(--accent-yellow);
+}
+
+[data-theme="dark"] .logo-icon {
+  background: var(--accent-yellow);
+  color: #1A1A1A;
+}
+
+[data-theme="dark"] .nav-links a {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .nav-links a:hover {
+  background: var(--accent-yellow);
+  color: #1A1A1A;
+}
+
+[data-theme="dark"] .hero {
+  background: linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 100%);
+  border-bottom-color: var(--accent-yellow);
+}
+
+[data-theme="dark"] .hero h1,
+[data-theme="dark"] .hero p {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .card {
+  background: var(--bg-secondary);
+  border-color: var(--text-primary);
+}
+
+[data-theme="dark"] .card-header {
+  border-bottom-color: var(--text-primary);
+}
+
+[data-theme="dark"] .btn {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--text-primary);
+}
+
+[data-theme="dark"] .btn-primary {
+  background: var(--accent-yellow);
+  color: #1A1A1A;
+}
+
+[data-theme="dark"] .btn-secondary {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+[data-theme="dark"] .btn-danger {
+  background: var(--accent-pink);
+  color: #1A1A1A;
+}
+
+[data-theme="dark"] .btn-success {
+  background: var(--accent-blue);
+  color: #1A1A1A;
+}
+
+[data-theme="dark"] .footer {
+  background: var(--bg-secondary);
+  border-top-color: var(--text-primary);
+}
+
+[data-theme="dark"] .stats-bar {
+  background: var(--bg-secondary);
+  border-color: var(--text-primary);
+}
+
+[data-theme="dark"] .filter-pill {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--text-primary);
+}
+
+[data-theme="dark"] .filter-pill.active {
+  background: var(--accent-yellow);
+  color: #1A1A1A;
+}
+
+[data-theme="dark"] .search-input {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--text-primary);
+}
+
+[data-theme="dark"] .tag {
+  background: var(--bg-tertiary);
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .resource-item {
+  background: var(--bg-secondary);
+  border-color: var(--text-primary);
+}
+
+[data-theme="dark"] .resource-link {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+[data-theme="dark"] .modal {
+  background: var(--bg-secondary);
+  border-color: var(--text-primary);
+}
+
+[data-theme="dark"] .modal-header {
+  background: #2D2D2D;
+  border-bottom-color: var(--text-primary);
+}
+
+[data-theme="dark"] .modal-close {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--text-primary);
+}
+
+[data-theme="dark"] .admin-sidebar {
+  background: var(--bg-secondary);
+  border-right-color: var(--text-primary);
+}
+
+[data-theme="dark"] .sidebar-nav a:hover,
+[data-theme="dark"] .sidebar-nav a.active {
+  background: var(--bg-tertiary);
+  border-color: var(--text-primary);
+}
+
+[data-theme="dark"] .admin-table {
+  border-color: var(--text-primary);
+}
+
+[data-theme="dark"] .admin-table th {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .admin-table td {
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .admin-table tr:hover td {
+  background: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .form-input,
+[data-theme="dark"] .form-textarea,
+[data-theme="dark"] .form-select {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--text-primary);
+}
+
+[data-theme="dark"] .login-card {
+  background: var(--bg-secondary);
+  border-color: var(--text-primary);
+}
+
+[data-theme="dark"] .loader-overlay {
+  background: var(--bg-primary);
+}
+
+[data-theme="dark"] .loader-logo {
+  background: var(--accent-yellow);
+  color: #1A1A1A;
+  border-color: var(--text-primary);
+}
+
+[data-theme="dark"] .loader-text {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .loader-dots span {
+  background: var(--text-primary);
+}
+
+[data-theme="dark"] .empty-state {
+  border-color: var(--text-primary);
+}
+
+[data-theme="dark"] .video-card {
+  background: var(--bg-secondary);
+  border-color: var(--text-primary);
+}
+
+[data-theme="dark"] .course-header {
+  background: var(--bg-secondary);
+  border-color: var(--text-primary);
+}
+
+[data-theme="dark"] .section-title {
+  border-bottom-color: var(--text-primary);
+}
+
+[data-theme="dark"] .back-link {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--text-primary);
+}
+
+[data-theme="dark"] .back-link:hover {
+  background: var(--accent-yellow);
+  color: #1A1A1A;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-left-color: var(--text-primary);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: var(--accent-yellow);
+  border-color: var(--text-primary);
+}
+
+[data-theme="dark"] ::selection {
+  background: var(--accent-yellow);
+  color: #1A1A1A;
+}
+
+/* ===== Dark Mode Toggle ===== */
+.theme-toggle {
+  position: fixed;
+  bottom: var(--space-lg);
+  left: var(--space-lg);
+  width: 56px;
+  height: 56px;
+  border: var(--border-thick);
+  border-radius: 50%;
+  background: var(--accent-yellow);
+  color: #1A1A1A;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+  z-index: 999;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1) rotate(15deg);
+  box-shadow: var(--shadow-lg), 0 0 20px rgba(255, 217, 61, 0.4);
+}
+
+.theme-toggle:active {
+  transform: scale(0.95);
+}
+
+[data-theme="dark"] .theme-toggle {
+  background: #2D2D2D;
+  color: var(--accent-yellow);
+  border-color: var(--accent-yellow);
+}
+
+[data-theme="dark"] .theme-toggle:hover {
+  box-shadow: var(--shadow-lg), 0 0 20px rgba(255, 217, 61, 0.3);
+}
+
+/* ===== Apply Admin Link (Subtle) ===== */
+.apply-admin-link {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: var(--space-xs) var(--space-sm);
+  border: 2px dashed var(--text-muted);
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  transition: all 0.2s ease;
+  opacity: 0.7;
+}
+
+.apply-admin-link:hover {
+  opacity: 1;
+  color: var(--text-secondary);
+  border-color: var(--text-secondary);
+  border-style: solid;
+  transform: translateY(-2px);
+}
+
+[data-theme="dark"] .apply-admin-link {
+  color: var(--text-muted);
+  border-color: var(--text-muted);
+}
+
+[data-theme="dark"] .apply-admin-link:hover {
+  color: var(--text-secondary);
+  border-color: var(--text-secondary);
+}
+
 /* ===== Keyframe Animations ===== */
 @keyframes pulse {
 
