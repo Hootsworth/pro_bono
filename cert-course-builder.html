@@ -357,6 +357,16 @@
             reader.readAsText(file);
         }
 
+        // Helper to read file as text
+        function readFileAsText(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = (e) => reject(e);
+                reader.readAsText(file);
+            });
+        }
+
         async function saveCourse() {
             const title = document.getElementById('courseTitle').value.trim();
             const description = document.getElementById('courseDescription').value.trim();
@@ -368,68 +378,126 @@
                 return;
             }
 
-            // Collect modules
-            const modules = [];
-            document.querySelectorAll('.module-card').forEach((card, index) => {
-                const moduleTitle = card.querySelector('.module-title').value.trim();
-                if (!moduleTitle) return;
+            // Show saving indicator
+            const saveBtn = document.querySelector('button[onclick="saveCourse()"]');
+            saveBtn.textContent = 'Saving...';
+            saveBtn.disabled = true;
 
-                const content = [];
-                card.querySelectorAll('.content-item').forEach(item => {
-                    const type = item.dataset.type;
-                    if (type === 'video') {
-                        const inputs = item.querySelectorAll('input');
-                        content.push({ type: 'video', data: inputs[0].value, title: inputs[1].value });
-                    } else if (type === 'text') {
-                        content.push({ type: 'text', data: item.querySelector('textarea').value, title: 'Text Content' });
-                    } else if (type === 'link') {
-                        const inputs = item.querySelectorAll('input');
-                        content.push({ type: 'link', data: inputs[0].value, title: inputs[1].value });
+            try {
+                // Collect modules with async file reading
+                const modules = [];
+                const moduleCards = document.querySelectorAll('.module-card');
+
+                for (let index = 0; index < moduleCards.length; index++) {
+                    const card = moduleCards[index];
+                    const moduleTitle = card.querySelector('.module-title').value.trim();
+                    if (!moduleTitle) continue;
+
+                    // Collect content items
+                    const content = [];
+                    const contentItems = card.querySelectorAll('.content-item');
+                    contentItems.forEach(item => {
+                        const type = item.dataset.type;
+                        if (type === 'video') {
+                            const inputs = item.querySelectorAll('input');
+                            const url = inputs[0]?.value?.trim();
+                            const videoTitle = inputs[1]?.value?.trim();
+                            if (url || videoTitle) {
+                                content.push({ type: 'video', data: url || '', title: videoTitle || 'Video' });
+                            }
+                        } else if (type === 'text') {
+                            const textarea = item.querySelector('textarea');
+                            const textData = textarea?.value?.trim();
+                            if (textData) {
+                                content.push({ type: 'text', data: textData, title: 'Reading Material' });
+                            }
+                        } else if (type === 'link') {
+                            const inputs = item.querySelectorAll('input');
+                            const url = inputs[0]?.value?.trim();
+                            const linkTitle = inputs[1]?.value?.trim();
+                            if (url || linkTitle) {
+                                content.push({ type: 'link', data: url || '', title: linkTitle || 'Link' });
+                            }
+                        }
+                    });
+
+                    // Handle module quiz CSV
+                    let moduleQuiz = null;
+                    const quizType = card.querySelector('.module-quiz-type').value;
+                    const quizTime = card.querySelector('.module-quiz-time').value;
+                    const quizCsvInput = card.querySelector('.module-quiz-csv');
+
+                    if (quizType && quizCsvInput.files.length > 0) {
+                        const csvText = await readFileAsText(quizCsvInput.files[0]);
+                        let questions = quizType === 'mcq' ? parseMCQCSV(csvText) : parseFlashcardCSV(csvText);
+                        moduleQuiz = {
+                            type: quizType,
+                            timeLimit: parseInt(quizTime) || 10,
+                            passingScore: 70,
+                            questions: questions
+                        };
                     }
-                });
 
-                modules.push({
-                    id: 'mod_' + Date.now() + '_' + index,
-                    title: moduleTitle,
-                    order: index,
-                    content: content,
-                    quiz: null // Quiz handling would need file reading
-                });
-            });
+                    modules.push({
+                        id: 'mod_' + Date.now() + '_' + index,
+                        title: moduleTitle,
+                        order: index,
+                        content: content,
+                        quiz: moduleQuiz
+                    });
+                }
 
-            // Prepare course data
-            const courseData = {
-                title,
-                description,
-                passingScore,
-                published,
-                modules
-            };
-
-            // Handle final exam
-            const finalExamTitle = document.getElementById('finalExamTitle').value.trim();
-            if (finalExamTitle) {
-                courseData.finalExam = {
-                    title: finalExamTitle,
-                    type: document.getElementById('finalExamType').value,
-                    timeLimit: parseInt(document.getElementById('finalExamTime').value) || 30,
-                    passingScore: parseInt(document.getElementById('finalExamPassScore').value) || 70,
-                    questions: [] // Would need file reading
+                // Prepare course data
+                const courseData = {
+                    title,
+                    description,
+                    passingScore,
+                    published,
+                    modules
                 };
-            }
 
-            let result;
-            if (editingCourseId) {
-                result = await updateCertificateCourseAsync(editingCourseId, courseData);
-            } else {
-                result = await createCertificateCourseAsync(courseData);
-            }
+                // Handle final exam CSV
+                const finalExamTitle = document.getElementById('finalExamTitle').value.trim();
+                const finalExamCsvInput = document.getElementById('finalExamCsv');
 
-            if (result) {
-                alert('Course saved successfully!');
-                window.location.href = 'admin-dashboard.html';
-            } else {
-                alert('Error saving course. Please try again.');
+                if (finalExamTitle) {
+                    let finalQuestions = [];
+
+                    if (finalExamCsvInput.files.length > 0) {
+                        const csvText = await readFileAsText(finalExamCsvInput.files[0]);
+                        const examType = document.getElementById('finalExamType').value;
+                        finalQuestions = examType === 'mcq' ? parseMCQCSV(csvText) : parseFlashcardCSV(csvText);
+                    }
+
+                    courseData.finalExam = {
+                        title: finalExamTitle,
+                        type: document.getElementById('finalExamType').value,
+                        timeLimit: parseInt(document.getElementById('finalExamTime').value) || 30,
+                        passingScore: parseInt(document.getElementById('finalExamPassScore').value) || 70,
+                        questions: finalQuestions
+                    };
+                }
+
+                let result;
+                if (editingCourseId) {
+                    result = await updateCertificateCourseAsync(editingCourseId, courseData);
+                } else {
+                    result = await createCertificateCourseAsync(courseData);
+                }
+
+                if (result) {
+                    alert('Course saved successfully!');
+                    window.location.href = 'admin-dashboard.html';
+                } else {
+                    alert('Error saving course. Please try again.');
+                    saveBtn.textContent = '💾 Save Course';
+                    saveBtn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error saving course:', error);
+                alert('Error saving course: ' + error.message);
+                saveBtn.textContent = '💾 Save Course';
+                saveBtn.disabled = false;
             }
         }
     </script>
