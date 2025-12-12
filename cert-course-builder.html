@@ -396,30 +396,35 @@
                     // Collect content items
                     const content = [];
                     const contentItems = card.querySelectorAll('.content-item');
+                    console.log('Module:', moduleTitle, 'Content items found:', contentItems.length);
+
                     contentItems.forEach(item => {
                         const type = item.dataset.type;
+                        console.log('Processing content item of type:', type);
+
                         if (type === 'video') {
                             const inputs = item.querySelectorAll('input');
-                            const url = inputs[0]?.value?.trim();
-                            const videoTitle = inputs[1]?.value?.trim();
-                            if (url || videoTitle) {
-                                content.push({ type: 'video', data: url || '', title: videoTitle || 'Video' });
-                            }
+                            const url = inputs[0]?.value || '';
+                            const videoTitle = inputs[1]?.value || 'Video';
+                            console.log('Video URL:', url, 'Title:', videoTitle);
+                            content.push({ type: 'video', data: url, title: videoTitle });
                         } else if (type === 'text') {
                             const textarea = item.querySelector('textarea');
-                            const textData = textarea?.value?.trim();
+                            const textData = textarea?.value || '';
+                            console.log('Text data length:', textData.length);
                             if (textData) {
                                 content.push({ type: 'text', data: textData, title: 'Reading Material' });
                             }
                         } else if (type === 'link') {
                             const inputs = item.querySelectorAll('input');
-                            const url = inputs[0]?.value?.trim();
-                            const linkTitle = inputs[1]?.value?.trim();
-                            if (url || linkTitle) {
-                                content.push({ type: 'link', data: url || '', title: linkTitle || 'Link' });
-                            }
+                            const url = inputs[0]?.value || '';
+                            const linkTitle = inputs[1]?.value || 'Link';
+                            console.log('Link URL:', url, 'Title:', linkTitle);
+                            content.push({ type: 'link', data: url, title: linkTitle });
                         }
                     });
+
+                    console.log('Total content items collected:', content.length);
 
                     // Handle module quiz CSV
                     let moduleQuiz = null;
