@@ -308,29 +308,29 @@
             const contentList = btn.closest('.module-card').querySelector('.content-list');
             const item = document.createElement('div');
             item.className = 'content-item';
+            item.setAttribute('data-content-type', type);
 
             let html = '';
             if (type === 'video') {
                 html = `
-                    <span>📹</span>
-                    <input type="text" class="form-input" placeholder="YouTube URL" style="flex: 1; padding: 4px 8px;">
-                    <input type="text" class="form-input" placeholder="Video Title" style="flex: 1; padding: 4px 8px;">
+                    <span>📹 Video</span>
+                    <input type="text" class="form-input content-url" placeholder="YouTube URL" style="flex: 1; padding: 4px 8px;">
+                    <input type="text" class="form-input content-title" placeholder="Video Title" style="flex: 1; padding: 4px 8px;">
                 `;
             } else if (type === 'text') {
                 html = `
-                    <span>📄</span>
-                    <textarea class="form-textarea" placeholder="Enter text content..." style="flex: 1; min-height: 60px; padding: 4px 8px;"></textarea>
+                    <span>📄 Text</span>
+                    <textarea class="form-textarea content-text" placeholder="Enter text content..." style="flex: 1; min-height: 80px; padding: 4px 8px;"></textarea>
                 `;
             } else if (type === 'link') {
                 html = `
-                    <span>🔗</span>
-                    <input type="text" class="form-input" placeholder="URL" style="flex: 1; padding: 4px 8px;">
-                    <input type="text" class="form-input" placeholder="Link Title" style="flex: 1; padding: 4px 8px;">
+                    <span>🔗 Link</span>
+                    <input type="text" class="form-input content-url" placeholder="URL" style="flex: 1; padding: 4px 8px;">
+                    <input type="text" class="form-input content-title" placeholder="Link Title" style="flex: 1; padding: 4px 8px;">
                 `;
             }
             html += `<button class="btn btn-danger" style="padding: 2px 6px;" onclick="this.parentElement.remove()">×</button>`;
             item.innerHTML = html;
-            item.dataset.type = type;
             contentList.appendChild(item);
         }
 
@@ -399,26 +399,23 @@
                     console.log('Module:', moduleTitle, 'Content items found:', contentItems.length);
 
                     contentItems.forEach(item => {
-                        const type = item.dataset.type;
+                        const type = item.getAttribute('data-content-type');
                         console.log('Processing content item of type:', type);
 
                         if (type === 'video') {
-                            const inputs = item.querySelectorAll('input');
-                            const url = inputs[0]?.value || '';
-                            const videoTitle = inputs[1]?.value || 'Video';
+                            const url = item.querySelector('.content-url')?.value || '';
+                            const videoTitle = item.querySelector('.content-title')?.value || 'Video';
                             console.log('Video URL:', url, 'Title:', videoTitle);
                             content.push({ type: 'video', data: url, title: videoTitle });
                         } else if (type === 'text') {
-                            const textarea = item.querySelector('textarea');
-                            const textData = textarea?.value || '';
+                            const textData = item.querySelector('.content-text')?.value || '';
                             console.log('Text data length:', textData.length);
                             if (textData) {
                                 content.push({ type: 'text', data: textData, title: 'Reading Material' });
                             }
                         } else if (type === 'link') {
-                            const inputs = item.querySelectorAll('input');
-                            const url = inputs[0]?.value || '';
-                            const linkTitle = inputs[1]?.value || 'Link';
+                            const url = item.querySelector('.content-url')?.value || '';
+                            const linkTitle = item.querySelector('.content-title')?.value || 'Link';
                             console.log('Link URL:', url, 'Title:', linkTitle);
                             content.push({ type: 'link', data: url, title: linkTitle });
                         }

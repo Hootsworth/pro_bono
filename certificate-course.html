@@ -24,76 +24,113 @@
             color: white;
         }
 
-        .course-hero p {
-            color: rgba(255, 255, 255, 0.9);
+        .sidebar-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
         }
 
-        .module-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .module-item {
+        .module-sidebar {
             border: 3px solid #1A1A1A;
             background: white;
-            padding: 1.5rem;
-            transition: all 0.2s ease;
+            padding: 1rem;
+            height: fit-content;
+            position: sticky;
+            top: 100px;
         }
 
-        .module-item:hover {
-            transform: translateX(4px);
-            box-shadow: 4px 4px 0 #1A1A1A;
-        }
-
-        .module-item.completed {
-            border-left: 6px solid var(--accent-green);
-        }
-
-        .module-item.locked {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .module-header {
+        .module-nav-item {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 0.5rem;
         }
 
-        .module-status {
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-            padding: 4px 10px;
-            border: 2px solid #1A1A1A;
+        .module-nav-item:hover {
+            background: var(--bg-tertiary);
         }
 
-        .module-status.completed {
-            background: var(--accent-green);
-        }
-
-        .module-status.in-progress {
+        .module-nav-item.active {
+            border-color: #1A1A1A;
             background: var(--accent-yellow);
         }
 
-        .module-status.locked {
-            background: #ccc;
-        }
-
-        .progress-bar {
-            height: 10px;
-            background: #ddd;
-            border: 2px solid #1A1A1A;
-            margin: 1rem 0;
-        }
-
-        .progress-fill {
-            height: 100%;
+        .module-nav-item.completed .status-dot {
             background: var(--accent-green);
-            transition: width 0.3s ease;
         }
 
-        .final-exam-card {
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid #1A1A1A;
+            background: #ddd;
+            flex-shrink: 0;
+        }
+
+        .content-area {
+            border: 3px solid #1A1A1A;
+            background: white;
+            min-height: 500px;
+        }
+
+        .content-header {
+            padding: 1.5rem;
+            border-bottom: 3px solid #1A1A1A;
+            background: var(--bg-secondary);
+        }
+
+        .content-body {
+            padding: 1.5rem;
+        }
+
+        .content-item-card {
+            border: 2px solid #1A1A1A;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: var(--bg-secondary);
+        }
+
+        .content-item-card h4 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .video-embed {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            background: #000;
+        }
+
+        .video-embed iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .text-content {
+            line-height: 1.7;
+            white-space: pre-wrap;
+        }
+
+        .complete-btn {
+            margin-top: 2rem;
+        }
+
+        .final-exam-banner {
             background: var(--accent-yellow);
             border: 4px solid #1A1A1A;
             padding: 2rem;
@@ -124,65 +161,70 @@
         <div class="container">
             <h1 id="courseTitle">Loading...</h1>
             <p id="courseDescription"></p>
-            <div style="margin-top: 1rem;">
-                <span class="badge" style="background: white; color: #1A1A1A;">📚 <span id="moduleCount">0</span>
-                    Modules</span>
-                <span class="badge" style="background: white; color: #1A1A1A; margin-left: 0.5rem;">🎯 <span
-                        id="passingScore">70</span>% to Pass</span>
-            </div>
         </div>
     </section>
 
-    <!-- Main Content -->
-    <main class="main">
-        <div class="container" style="max-width: 800px;">
-            <!-- Progress -->
-            <div style="margin-bottom: 2rem;">
-                <h3 style="margin-bottom: 0.5rem;">Your Progress</h3>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
-                </div>
-                <p style="font-family: var(--font-mono); font-size: 0.9rem;" id="progressText">0% Complete</p>
-            </div>
+    <!-- Main Layout -->
+    <div class="sidebar-layout">
+        <!-- Module Navigation Sidebar -->
+        <aside class="module-sidebar">
+            <h3 style="margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #1A1A1A;">📚 Modules</h3>
+            <div id="moduleNav"></div>
 
-            <!-- Modules List -->
-            <h2 style="margin-bottom: 1rem;">📚 Course Modules</h2>
-            <div class="module-list" id="modulesList">
-                <!-- Dynamic content -->
-            </div>
-
-            <!-- Final Exam Card -->
-            <div class="final-exam-card" id="finalExamCard" style="display: none;">
-                <h2>🏆 Final Exam</h2>
-                <p style="margin: 1rem 0;" id="finalExamInfo">Complete all modules to unlock the final exam.</p>
-                <button class="btn btn-primary" id="startFinalExam" disabled>Start Final Exam</button>
-            </div>
-
-            <!-- Certificate Section (shown after passing) -->
-            <div id="certificateSection" style="display: none; margin-top: 2rem;">
-                <div
-                    style="text-align: center; padding: 2rem; border: 4px solid var(--accent-green); background: #E8F5E9;">
-                    <h2>🎉 Congratulations!</h2>
-                    <p>You have successfully completed this course.</p>
-                    <p style="margin: 1rem 0;"><strong>Certificate ID:</strong> <span id="certIdDisplay"></span></p>
-                    <button class="btn btn-primary" onclick="viewCertificate()">View Certificate</button>
+            <div id="finalExamNav"
+                style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 2px solid #1A1A1A;">
+                <div class="module-nav-item" onclick="showFinalExam()">
+                    <span class="status-dot" id="finalExamDot"></span>
+                    <span>🏆 Final Exam</span>
                 </div>
             </div>
-        </div>
-    </main>
+        </aside>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container footer-content">
-            <div class="footer-left">
-                <div class="footer-logo">
-                    <div class="logo-icon" style="width: 32px; height: 32px; font-size: 1rem;">PB</div>
-                    <span>Pro Bono</span>
+        <!-- Content Area -->
+        <main class="content-area">
+            <div id="loadingState" class="empty-state" style="padding: 3rem;">
+                <div class="empty-state-icon">⏳</div>
+                <h3>Loading Course...</h3>
+            </div>
+
+            <div id="moduleContent" style="display: none;">
+                <div class="content-header">
+                    <h2 id="moduleTitle">Module Title</h2>
+                </div>
+                <div class="content-body" id="moduleBody">
+                    <!-- Dynamic module content -->
                 </div>
             </div>
-            <p style="font-family: var(--font-mono); font-size: 0.9rem;">© 2025 Pro Bono</p>
-        </div>
-    </footer>
+
+            <div id="finalExamContent" style="display: none;">
+                <div class="content-header" style="background: var(--accent-yellow);">
+                    <h2>🏆 Final Exam</h2>
+                </div>
+                <div class="content-body" style="text-align: center; padding: 3rem;">
+                    <h3 id="examTitle">Final Assessment</h3>
+                    <p style="margin: 1rem 0;" id="examInfo">Complete all modules to unlock.</p>
+                    <p style="color: var(--text-secondary);">Time Limit: <span id="examTime">30</span> minutes</p>
+                    <p style="color: var(--text-secondary);">Passing Score: <span id="examPass">70</span>%</p>
+                    <button class="btn btn-primary mt-lg" id="startExamBtn" disabled>Start Exam</button>
+                </div>
+            </div>
+
+            <div id="certificateContent" style="display: none;">
+                <div class="content-header" style="background: var(--accent-green);">
+                    <h2>🎉 Certificate Earned!</h2>
+                </div>
+                <div class="content-body" style="text-align: center; padding: 2rem;">
+                    <p>Congratulations! You have successfully completed this course.</p>
+                    <p style="margin: 1rem 0;"><strong>Certificate ID:</strong> <span id="myCertId"></span></p>
+                    <button class="btn btn-primary" onclick="downloadCertificate()">📥 Download Certificate
+                        (PDF)</button>
+                    <button class="btn mt-sm"
+                        onclick="window.open('verify-certificate.html?id=' + userProgress.certificateId)">🔍 Verify
+                        Certificate</button>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -190,16 +232,25 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="firebase-config.js"></script>
     <script src="app.js"></script>
+    <!-- jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         let currentCourse = null;
         let userProgress = null;
         let userEmail = null;
+        let currentModuleIndex = 0;
 
         function escapeHtml(text) {
             if (!text) return '';
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        function extractYouTubeId(url) {
+            if (!url) return null;
+            const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
+            return match ? match[1] : url;
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -222,127 +273,294 @@
             // Display course info
             document.getElementById('courseTitle').textContent = currentCourse.title;
             document.getElementById('courseDescription').textContent = currentCourse.description;
-            document.getElementById('moduleCount').textContent = currentCourse.modules?.length || 0;
-            document.getElementById('passingScore').textContent = currentCourse.passingScore || 70;
 
-            // Check if user is logged in for progress tracking
+            // Check user auth
             onAuthStateChanged(async (user) => {
                 if (user) {
                     userEmail = user.email;
-                    userProgress = await getUserProgressAsync(courseId, userEmail);
+                    userProgress = await getUserProgressAsync(courseId, userEmail) || { moduleProgress: {} };
                 }
-                renderModules();
-                updateProgress();
-            });
+                renderSidebar();
+                document.getElementById('loadingState').style.display = 'none';
 
-            // Show final exam card if exists
-            if (currentCourse.finalExam) {
-                document.getElementById('finalExamCard').style.display = 'block';
-            }
+                // Show first module or certificate
+                if (userProgress?.certificateIssued) {
+                    showCertificate();
+                } else if (currentCourse.modules && currentCourse.modules.length > 0) {
+                    showModule(0);
+                } else if (currentCourse.finalExam) {
+                    showFinalExam();
+                }
+            });
         });
 
-        function renderModules() {
-            const list = document.getElementById('modulesList');
+        function renderSidebar() {
+            const nav = document.getElementById('moduleNav');
             if (!currentCourse.modules || currentCourse.modules.length === 0) {
-                list.innerHTML = '<p>No modules available yet.</p>';
+                nav.innerHTML = '<p style="color: var(--text-secondary);">No modules</p>';
                 return;
             }
 
-            list.innerHTML = currentCourse.modules.map((module, index) => {
-                const isCompleted = userProgress?.moduleProgress?.[module.id]?.completed;
-                const isLocked = index > 0 && !userProgress?.moduleProgress?.[currentCourse.modules[index - 1].id]?.completed;
-
-                let statusClass = 'in-progress';
-                let statusText = 'Start';
-                if (isCompleted) {
-                    statusClass = 'completed';
-                    statusText = '✓ Completed';
-                } else if (isLocked && userEmail) {
-                    statusClass = 'locked';
-                    statusText = '🔒 Locked';
-                }
-
+            nav.innerHTML = currentCourse.modules.map((mod, index) => {
+                const isCompleted = userProgress?.moduleProgress?.[mod.id]?.completed;
                 return `
-                    <div class="module-item ${isCompleted ? 'completed' : ''} ${isLocked && userEmail ? 'locked' : ''}" 
-                         onclick="${!isLocked || !userEmail ? `openModule('${module.id}')` : ''}">
-                        <div class="module-header">
-                            <div>
-                                <h3 style="margin: 0;">${index + 1}. ${escapeHtml(module.title)}</h3>
-                                <p style="margin: 0.5rem 0 0; font-size: 0.9rem; color: var(--text-secondary);">
-                                    ${module.content?.length || 0} items
-                                    ${module.quiz ? ' • Quiz included' : ''}
-                                </p>
-                            </div>
-                            <span class="module-status ${statusClass}">${statusText}</span>
-                        </div>
+                    <div class="module-nav-item ${isCompleted ? 'completed' : ''}" 
+                         data-index="${index}" onclick="showModule(${index})">
+                        <span class="status-dot"></span>
+                        <span>${index + 1}. ${escapeHtml(mod.title)}</span>
                     </div>
                 `;
             }).join('');
+
+            // Show final exam nav if exists
+            if (currentCourse.finalExam) {
+                document.getElementById('finalExamNav').style.display = 'block';
+                document.getElementById('examTitle').textContent = currentCourse.finalExam.title || 'Final Exam';
+                document.getElementById('examTime').textContent = currentCourse.finalExam.timeLimit || 30;
+                document.getElementById('examPass').textContent = currentCourse.finalExam.passingScore || 70;
+            }
         }
 
-        function updateProgress() {
-            if (!userProgress || !currentCourse.modules) {
-                document.getElementById('progressFill').style.width = '0%';
-                document.getElementById('progressText').textContent = '0% Complete';
-                return;
-            }
+        function showModule(index) {
+            currentModuleIndex = index;
+            const mod = currentCourse.modules[index];
 
-            const totalModules = currentCourse.modules.length;
-            let completedModules = 0;
-
-            currentCourse.modules.forEach(mod => {
-                if (userProgress.moduleProgress?.[mod.id]?.completed) {
-                    completedModules++;
-                }
+            // Update sidebar active state
+            document.querySelectorAll('.module-nav-item').forEach((el, i) => {
+                el.classList.toggle('active', i === index);
             });
 
-            const percentage = totalModules > 0 ? Math.round((completedModules / totalModules) * 100) : 0;
-            document.getElementById('progressFill').style.width = percentage + '%';
-            document.getElementById('progressText').textContent = `${percentage}% Complete (${completedModules}/${totalModules} modules)`;
+            // Hide other content
+            document.getElementById('finalExamContent').style.display = 'none';
+            document.getElementById('certificateContent').style.display = 'none';
+            document.getElementById('moduleContent').style.display = 'block';
 
-            // Enable final exam if all modules completed
-            if (completedModules === totalModules && currentCourse.finalExam) {
-                document.getElementById('startFinalExam').disabled = false;
-                document.getElementById('finalExamInfo').textContent = 'You\'re ready to take the final exam!';
-                document.getElementById('startFinalExam').onclick = () => {
-                    window.location.href = `quiz.html?courseId=${currentCourse.id}&type=final`;
-                };
+            // Set module title
+            document.getElementById('moduleTitle').textContent = mod.title;
+
+            // Render module content
+            const body = document.getElementById('moduleBody');
+            let contentHtml = '';
+
+            if (mod.content && mod.content.length > 0) {
+                mod.content.forEach(item => {
+                    if (item.type === 'video') {
+                        const videoId = extractYouTubeId(item.data);
+                        contentHtml += `
+                            <div class="content-item-card">
+                                <h4>📹 ${escapeHtml(item.title)}</h4>
+                                <div class="video-embed">
+                                    <iframe src="https://www.youtube.com/embed/${videoId}" 
+                                            allowfullscreen></iframe>
+                                </div>
+                            </div>
+                        `;
+                    } else if (item.type === 'text') {
+                        contentHtml += `
+                            <div class="content-item-card">
+                                <h4>📄 ${escapeHtml(item.title)}</h4>
+                                <div class="text-content">${escapeHtml(item.data)}</div>
+                            </div>
+                        `;
+                    } else if (item.type === 'link') {
+                        contentHtml += `
+                            <div class="content-item-card">
+                                <h4>🔗 ${escapeHtml(item.title)}</h4>
+                                <a href="${escapeHtml(item.data)}" target="_blank" class="btn btn-primary">
+                                    Open Link →
+                                </a>
+                            </div>
+                        `;
+                    }
+                });
+            } else {
+                contentHtml = '<p style="color: var(--text-secondary);">No content in this module yet.</p>';
             }
 
-            // Show certificate if earned
-            if (userProgress.certificateIssued && userProgress.certificateId) {
-                document.getElementById('certificateSection').style.display = 'block';
-                document.getElementById('certIdDisplay').textContent = userProgress.certificateId;
+            // Add complete button
+            const isCompleted = userProgress?.moduleProgress?.[mod.id]?.completed;
+            if (!isCompleted && userEmail) {
+                contentHtml += `
+                    <button class="btn btn-primary complete-btn" onclick="completeModule('${mod.id}')">
+                        ✓ Mark Module as Complete
+                    </button>
+                `;
+            } else if (isCompleted) {
+                contentHtml += `
+                    <div class="complete-btn" style="color: var(--accent-green); font-weight: bold;">
+                        ✓ Module Completed
+                    </div>
+                `;
             }
+
+            // Module quiz if exists
+            if (mod.quiz && mod.quiz.questions && mod.quiz.questions.length > 0) {
+                contentHtml += `
+                    <div style="margin-top: 2rem; padding: 1.5rem; border: 3px solid #1A1A1A; background: var(--accent-yellow);">
+                        <h3>📝 Module Quiz</h3>
+                        <p>${mod.quiz.questions.length} questions • ${mod.quiz.timeLimit || 10} minutes</p>
+                        <button class="btn btn-primary mt-sm" onclick="startModuleQuiz(${index})">
+                            Start Quiz
+                        </button>
+                    </div>
+                `;
+            }
+
+            body.innerHTML = contentHtml;
+
+            // Check if all modules complete to unlock final exam
+            checkFinalExamUnlock();
         }
 
-        function openModule(moduleId) {
+        async function completeModule(moduleId) {
             if (!userEmail) {
-                alert('Please login to track your progress and earn certificates.');
+                alert('Please login to track progress');
                 return;
             }
-            // In a full implementation, this would open a module viewer
-            // For now, we'll mark it as complete for demo purposes
-            alert('Module content viewer would open here. For this demo, the module will be marked as complete.');
-            markModuleComplete(moduleId);
-        }
-
-        async function markModuleComplete(moduleId) {
-            if (!userEmail) return;
 
             const moduleProgress = userProgress?.moduleProgress || {};
             moduleProgress[moduleId] = { completed: true, completedAt: new Date().toISOString() };
 
             await updateUserProgressAsync(currentCourse.id, userEmail, { moduleProgress });
             userProgress = await getUserProgressAsync(currentCourse.id, userEmail);
-            renderModules();
-            updateProgress();
+
+            renderSidebar();
+            showModule(currentModuleIndex);
         }
 
-        function viewCertificate() {
-            if (userProgress?.certificateId) {
-                window.location.href = `verify-certificate.html?id=${userProgress.certificateId}`;
+        function checkFinalExamUnlock() {
+            if (!currentCourse.finalExam || !currentCourse.modules) return;
+
+            let allComplete = true;
+            currentCourse.modules.forEach(mod => {
+                if (!userProgress?.moduleProgress?.[mod.id]?.completed) {
+                    allComplete = false;
+                }
+            });
+
+            const btn = document.getElementById('startExamBtn');
+            const info = document.getElementById('examInfo');
+
+            if (allComplete) {
+                btn.disabled = false;
+                info.textContent = 'You\'re ready to take the exam!';
+                btn.onclick = () => {
+                    window.location.href = `quiz.html?courseId=${currentCourse.id}&type=final`;
+                };
+            } else {
+                btn.disabled = true;
+                info.textContent = 'Complete all modules to unlock the final exam.';
             }
+        }
+
+        function showFinalExam() {
+            document.querySelectorAll('.module-nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('moduleContent').style.display = 'none';
+            document.getElementById('certificateContent').style.display = 'none';
+            document.getElementById('finalExamContent').style.display = 'block';
+            checkFinalExamUnlock();
+        }
+
+        function showCertificate() {
+            document.querySelectorAll('.module-nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('moduleContent').style.display = 'none';
+            document.getElementById('finalExamContent').style.display = 'none';
+            document.getElementById('certificateContent').style.display = 'block';
+            document.getElementById('myCertId').textContent = userProgress.certificateId;
+        }
+
+        function startModuleQuiz(moduleIndex) {
+            window.location.href = `quiz.html?courseId=${currentCourse.id}&type=module&moduleIndex=${moduleIndex}`;
+        }
+
+        async function downloadCertificate() {
+            if (!userProgress?.certificateId) return;
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            const width = 297;
+            const height = 210;
+
+            // Background
+            doc.setFillColor(255, 252, 240);
+            doc.rect(0, 0, width, height, 'F');
+
+            // Border
+            doc.setDrawColor(26, 26, 26);
+            doc.setLineWidth(3);
+            doc.rect(10, 10, width - 20, height - 20);
+            doc.setLineWidth(1);
+            doc.rect(15, 15, width - 30, height - 30);
+
+            // Header
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(14);
+            doc.setTextColor(107, 114, 128);
+            doc.text('PRO BONO EDUCATION', width / 2, 35, { align: 'center' });
+
+            // Certificate Title
+            doc.setFontSize(42);
+            doc.setTextColor(26, 26, 26);
+            doc.text('CERTIFICATE', width / 2, 55, { align: 'center' });
+
+            doc.setFontSize(18);
+            doc.setTextColor(107, 114, 128);
+            doc.text('OF COMPLETION', width / 2, 65, { align: 'center' });
+
+            // Decorative line
+            doc.setDrawColor(139, 92, 246);
+            doc.setLineWidth(2);
+            doc.line(80, 75, width - 80, 75);
+
+            // Recipient
+            doc.setFontSize(14);
+            doc.setTextColor(107, 114, 128);
+            doc.text('This is to certify that', width / 2, 90, { align: 'center' });
+
+            doc.setFontSize(28);
+            doc.setTextColor(26, 26, 26);
+            doc.setFont('helvetica', 'bold');
+            const userName = userEmail.split('@')[0].replace(/[._]/g, ' ').toUpperCase();
+            doc.text(userName, width / 2, 105, { align: 'center' });
+
+            // Course
+            doc.setFontSize(14);
+            doc.setTextColor(107, 114, 128);
+            doc.setFont('helvetica', 'normal');
+            doc.text('has successfully completed the course', width / 2, 118, { align: 'center' });
+
+            doc.setFontSize(20);
+            doc.setTextColor(139, 92, 246);
+            doc.setFont('helvetica', 'bold');
+            doc.text(currentCourse.title, width / 2, 132, { align: 'center' });
+
+            // Date and ID
+            doc.setFontSize(11);
+            doc.setTextColor(107, 114, 128);
+            doc.setFont('helvetica', 'normal');
+            const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            doc.text(`Issued: ${date}`, 60, 165);
+            doc.text(`Certificate ID: ${userProgress.certificateId}`, width - 60, 165, { align: 'right' });
+
+            // Signature line
+            doc.setDrawColor(26, 26, 26);
+            doc.setLineWidth(0.5);
+            doc.line(width / 2 - 40, 175, width / 2 + 40, 175);
+            doc.setFontSize(10);
+            doc.text('Pro Bono Team', width / 2, 182, { align: 'center' });
+
+            // Verification URL
+            doc.setFontSize(9);
+            doc.setTextColor(139, 92, 246);
+            doc.text(`Verify at: ${window.location.origin}/verify-certificate.html?id=${userProgress.certificateId}`, width / 2, 195, { align: 'center' });
+
+            // Save
+            doc.save(`ProBono_Certificate_${userProgress.certificateId}.pdf`);
         }
     </script>
     <script src="theme.js"></script>
