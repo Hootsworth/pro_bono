@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="Learn about Pro Bono - Our mission to make quality education accessible to everyone.">
-    <title>About Us | Pro Bono</title>
+        content="Learn about Pro Bonana - Our mission to make quality education accessible to everyone.">
+    <title>About Us | Pro Bonana</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -15,23 +15,39 @@
     <link rel="stylesheet" href="styles.css">
     <style>
         .about-hero {
-            background: var(--accent-yellow);
+            background: var(--gradient-hero);
             border-bottom: var(--border-extra);
-            padding: var(--space-2xl) 0;
+            padding: var(--space-3xl) 0 var(--space-2xl);
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .about-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 30% 70%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.15) 0%, transparent 40%);
+            pointer-events: none;
         }
 
         .about-hero h1 {
-            font-size: 3.5rem;
+            font-size: clamp(2.5rem, 8vw, 4rem);
             margin-bottom: var(--space-md);
             letter-spacing: -0.02em;
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
+            position: relative;
         }
 
         .about-hero p {
-            font-size: 1.25rem;
+            font-size: clamp(1rem, 2.5vw, 1.25rem);
             max-width: 600px;
             margin: 0 auto;
             color: var(--text-secondary);
+            line-height: 1.6;
+            position: relative;
         }
 
         .mission-section {
@@ -225,7 +241,7 @@
         <div class="container header-content">
             <a href="index.html" class="logo">
                 <div class="logo-icon">PB</div>
-                <span>Pro Bono</span>
+                <span>Pro Bonana</span>
             </a>
             <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
                 <span></span>
@@ -247,10 +263,10 @@
     <!-- Hero Section -->
     <section class="about-hero">
         <div class="container">
-            <h1>We Are <span style="text-decoration: underline; text-decoration-color: var(--text-primary);">Pro
-                    Bono</span></h1>
+            <h1>We Are <span style="text-decoration: underline; text-decoration-color: var(--accent-yellow);">Pro
+                    Bonana</span> 🍌</h1>
             <p>On a mission to democratize education and make quality learning resources accessible to every student,
-                everywhere.</p>
+                everywhere. It's bananas how good free education can be!</p>
         </div>
     </section>
 
@@ -268,8 +284,8 @@
                     <div class="mission-icon" style="background: var(--accent-pink);">❤️</div>
                     <h3>Why We Exist</h3>
                     <p>Education shouldn't be a privilege. We saw students struggling to find good study materials,
-                        paying for resources that should be free. So we built Pro Bono — Latin for "for the public
-                        good."</p>
+                        paying for resources that should be free. So we built Pro Bonana — where learning is always
+                        a-peeling!</p>
                 </div>
                 <div class="mission-card">
                     <div class="mission-icon" style="background: var(--accent-green);">🌱</div>
@@ -286,7 +302,7 @@
         <div class="container">
             <div class="story-content">
                 <h2>📖 Our Story</h2>
-                <p>Pro Bono started as a simple idea: what if we could gather all the scattered study resources — the
+                <p>Pro Bonana started as a simple idea: what if we could gather all the scattered study resources — the
                     lecture videos, the previous year papers, the problem sets — and put them in one place, freely
                     accessible to everyone?</p>
 
@@ -298,7 +314,7 @@
                     <footer style="font-style: normal; font-size: 0.9rem; margin-top: 10px;">— Nelson Mandela</footer>
                 </blockquote>
 
-                <p>That's why Pro Bono exists. Not for profit, not for fame — but for the simple belief that when one
+                <p>That's why Pro Bonana exists. Not for profit, not for fame — but for the simple belief that when one
                     student succeeds, we all succeed. We're building a community of learners who help each other grow.
                 </p>
 
@@ -340,14 +356,15 @@
             <div class="footer-left">
                 <div class="footer-logo">
                     <div class="logo-icon" style="width: 32px; height: 32px; font-size: 1rem;">PB</div>
-                    <span>Pro Bono</span>
+                    <span>Pro Bonana</span>
                 </div>
                 <ul class="footer-links">
                     <li><a href="index.html">Courses</a></li>
                     <li><a href="apply-admin.html">Apply for Admin</a></li>
                 </ul>
             </div>
-            <p style="font-family: var(--font-mono); font-size: 0.9rem;">© 2025 Pro Bono • Built with Neo Brutalism</p>
+            <p style="font-family: var(--font-mono); font-size: 0.9rem;">© 2025 Pro Bonana 🍌 • Peel back the layers of
+                knowledge</p>
         </div>
     </footer>
     <script src="theme.js"></script>

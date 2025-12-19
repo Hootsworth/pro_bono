@@ -5,13 +5,314 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Course details with videos and resources">
-    <title>Course | Pro Bono</title>
+    <title>Course | Pro Bonana</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Course Page Specific Styles - Structured Design */
+        .course-hero {
+            background: var(--gradient-hero);
+            padding: clamp(2rem, 5vw, 3.5rem) 0;
+            border-bottom: var(--border-extra);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .course-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 40%);
+            pointer-events: none;
+        }
+
+        .course-hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .course-hero h1 {
+            font-size: clamp(1.75rem, 5vw, 2.5rem);
+            margin-bottom: var(--space-sm);
+            line-height: 1.2;
+        }
+
+        .course-hero-description {
+            font-size: clamp(0.95rem, 2vw, 1.1rem);
+            color: var(--text-secondary);
+            max-width: 700px;
+            line-height: 1.6;
+            margin-bottom: var(--space-md);
+        }
+
+        .course-stats {
+            display: flex;
+            gap: var(--space-md);
+            flex-wrap: wrap;
+        }
+
+        .course-stat-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-xs);
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: var(--border-thin);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* Content Layout */
+        .course-layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: var(--space-xl);
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-xl) var(--space-md);
+        }
+
+        @media (max-width: 900px) {
+            .course-layout {
+                grid-template-columns: 1fr;
+                gap: var(--space-lg);
+            }
+        }
+
+        /* Course Navigation Sidebar */
+        .course-nav {
+            background: var(--bg-card);
+            border: var(--border-thick);
+            padding: var(--space-md);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .course-nav-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: var(--space-md);
+            padding-bottom: var(--space-sm);
+            border-bottom: var(--border-thin);
+        }
+
+        .course-nav-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            border: 2px solid transparent;
+            margin-bottom: var(--space-xs);
+            font-size: 0.9rem;
+        }
+
+        .course-nav-item:hover {
+            background: var(--bg-secondary);
+        }
+
+        .course-nav-item.active {
+            background: var(--accent-yellow);
+            border-color: var(--border-color);
+        }
+
+        .course-nav-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        /* Content Area */
+        .course-content-area {
+            min-height: 400px;
+        }
+
+        .content-section {
+            background: var(--bg-card);
+            border: var(--border-thick);
+            margin-bottom: var(--space-xl);
+        }
+
+        .content-section-header {
+            padding: var(--space-md) var(--space-lg);
+            background: var(--bg-secondary);
+            border-bottom: var(--border-thin);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .content-section-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            border: var(--border-thin);
+        }
+
+        .content-section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .content-section-count {
+            margin-left: auto;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .content-section-body {
+            padding: var(--space-lg);
+        }
+
+        /* Video Grid */
+        .video-grid-structured {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--space-md);
+        }
+
+        .video-card-structured {
+            border: var(--border-thin);
+            background: var(--bg-secondary);
+            transition: all var(--transition-smooth);
+        }
+
+        .video-card-structured:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .video-card-structured .video-embed {
+            position: relative;
+            padding-bottom: 56.25%;
+            background: #000;
+        }
+
+        .video-card-structured .video-embed iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .video-card-structured .video-info {
+            padding: var(--space-sm) var(--space-md);
+            border-top: var(--border-thin);
+        }
+
+        .video-card-structured .video-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        /* Resource Cards */
+        .resource-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: var(--space-md);
+        }
+
+        .resource-card {
+            border: var(--border-thin);
+            padding: var(--space-md);
+            background: var(--bg-secondary);
+            text-align: center;
+            transition: all var(--transition-smooth);
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .resource-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-sm);
+            background: var(--bg-tertiary);
+        }
+
+        .resource-card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            border: var(--border-thin);
+        }
+
+        .resource-card-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            line-height: 1.3;
+        }
+
+        .resource-card-type {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        /* Back Link */
+        .back-link-hero {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-xs);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: var(--space-md);
+            text-decoration: none;
+            transition: all var(--transition-fast);
+        }
+
+        .back-link-hero:hover {
+            transform: translateX(-4px);
+        }
+
+        @media (max-width: 768px) {
+            .course-nav {
+                position: static;
+            }
+
+            .video-grid-structured {
+                grid-template-columns: 1fr;
+            }
+
+            .resource-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -20,7 +321,7 @@
         <div class="container header-content">
             <a href="index.html" class="logo">
                 <div class="logo-icon">PB</div>
-                <span>Pro Bono</span>
+                <span>Pro Bonana</span>
             </a>
             <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
                 <span></span>
@@ -39,61 +340,82 @@
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="main">
+    <!-- Loading State -->
+    <div class="empty-state" id="loadingState" style="padding: 5rem 2rem;">
+        <div class="empty-state-icon">⏳</div>
+        <h3>Loading Course...</h3>
+    </div>
+
+    <!-- Course Hero (hidden until loaded) -->
+    <section class="course-hero" id="courseHero" style="display: none;">
         <div class="container">
-            <!-- Back Link -->
-            <a href="index.html" class="back-link">
-                ← Back to Courses
-            </a>
-
-            <!-- Loading State -->
-            <div class="empty-state" id="loadingState">
-                <div class="empty-state-icon">⏳</div>
-                <h3>Loading Course...</h3>
-            </div>
-
-            <!-- Course Content (hidden until loaded) -->
-            <div id="courseContent" style="display: none;">
-                <!-- Course Header -->
-                <div class="course-header" id="courseHeader">
-                    <!-- Dynamic content -->
+            <div class="course-hero-content">
+                <a href="index.html" class="back-link-hero">← Back to Courses</a>
+                <h1 id="courseTitle"></h1>
+                <p class="course-hero-description" id="courseDescription"></p>
+                <div class="course-stats" id="courseStats">
+                    <!-- Dynamic stats -->
                 </div>
+            </div>
+        </div>
+    </section>
 
-                <!-- Videos Section -->
-                <section class="section" id="videosSection">
-                    <h2 class="section-title">
-                        <span class="section-icon" style="background: #FF6B9D;">📹</span>
-                        Video Lectures
-                    </h2>
-                    <div class="video-grid" id="videoGrid">
+    <!-- Course Layout (hidden until loaded) -->
+    <div class="course-layout" id="courseLayout" style="display: none;">
+        <!-- Sidebar Navigation -->
+        <aside class="course-nav">
+            <div class="course-nav-title">📚 Course Contents</div>
+            <div class="course-nav-item active" onclick="scrollToSection('videosSection')">
+                <div class="course-nav-icon" style="background: var(--accent-pink-light);">📹</div>
+                <span>Video Lectures</span>
+            </div>
+            <div class="course-nav-item" onclick="scrollToSection('resourcesSection')">
+                <div class="course-nav-icon" style="background: var(--accent-cyan);">📦</div>
+                <span>Resources</span>
+            </div>
+        </aside>
+
+        <!-- Content Area -->
+        <div class="course-content-area">
+            <!-- Videos Section -->
+            <section class="content-section" id="videosSection">
+                <div class="content-section-header">
+                    <div class="content-section-icon" style="background: var(--accent-pink-light);">📹</div>
+                    <h2 class="content-section-title">Video Lectures</h2>
+                    <span class="content-section-count" id="videoCount">0 videos</span>
+                </div>
+                <div class="content-section-body">
+                    <div class="video-grid-structured" id="videoGrid">
                         <!-- Dynamic content -->
                     </div>
-                    <div class="empty-state" id="videosEmpty" style="display: none;">
+                    <div class="empty-state" id="videosEmpty" style="display: none; padding: 2rem;">
                         <div class="empty-state-icon">🎬</div>
                         <h3>No Videos Yet</h3>
                         <p>Video lectures will be added soon.</p>
                     </div>
-                </section>
+                </div>
+            </section>
 
-                <!-- Resources Section (Unified) -->
-                <section class="section" id="resourcesSection">
-                    <h2 class="section-title">
-                        <span class="section-icon" style="background: #4ECDC4;">📦</span>
-                        Course Resources
-                    </h2>
-                    <div class="resource-list" id="resourcesList">
+            <!-- Resources Section -->
+            <section class="content-section" id="resourcesSection">
+                <div class="content-section-header">
+                    <div class="content-section-icon" style="background: var(--accent-cyan);">📦</div>
+                    <h2 class="content-section-title">Course Resources</h2>
+                    <span class="content-section-count" id="resourceCount">0 resources</span>
+                </div>
+                <div class="content-section-body">
+                    <div class="resource-grid" id="resourcesList">
                         <!-- Dynamic content -->
                     </div>
-                    <div class="empty-state" id="resourcesEmpty" style="display: none;">
+                    <div class="empty-state" id="resourcesEmpty" style="display: none; padding: 2rem;">
                         <div class="empty-state-icon">📂</div>
                         <h3>No Resources Yet</h3>
                         <p>Textbooks, PPTs, flashcards, and other resources will be added soon.</p>
                     </div>
-                </section>
-            </div>
+                </div>
+            </section>
         </div>
-    </main>
+    </div>
 
     <!-- Flashcard Viewer Modal -->
     <div class="modal-overlay" id="flashcardModal">
@@ -123,7 +445,7 @@
     <footer
         style="border-top: 4px solid #1A1A1A; padding: 1.5rem 0; text-align: center; font-family: var(--font-mono);">
         <div class="container">
-            <p><strong>Pro Bono</strong> &copy; 2025 • Built with Neo Brutalism</p>
+            <p><strong>Pro Bonana</strong> &copy; 2025 🍌 • Peel back the layers of knowledge</p>
         </div>
     </footer>
 
@@ -134,6 +456,17 @@
     <script src="firebase-config.js"></script>
     <script src="app.js"></script>
     <script>
+        // Scroll to section helper
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Update active nav item
+                document.querySelectorAll('.course-nav-item').forEach(item => item.classList.remove('active'));
+                event.target.closest('.course-nav-item').classList.add('active');
+            }
+        }
+
         // Initialize course page
         document.addEventListener('DOMContentLoaded', async () => {
             const courseId = getUrlParam('id');
@@ -149,29 +482,30 @@
             }
 
             document.getElementById('loadingState').style.display = 'none';
-            document.getElementById('courseContent').style.display = 'block';
+            document.getElementById('courseHero').style.display = 'block';
+            document.getElementById('courseLayout').style.display = 'grid';
             renderCourse(course);
         });
 
         function renderCourse(course) {
             // Update page title
-            document.title = `${course.title} | Pro Bono`;
+            document.title = `${course.title} | Pro Bonana`;
 
-            // Render header
-            const headerEl = document.getElementById('courseHeader');
-            headerEl.style.borderTop = `8px solid ${course.color}`;
             const resources = course.resources || [];
             const videoCount = course.videos?.length || 0;
             const resourceCount = resources.length;
 
-            headerEl.innerHTML = `
-        <h1>${escapeHtml(course.title)}</h1>
-        <p class="mt-sm" style="font-size: 1.1rem;">${escapeHtml(course.description)}</p>
-        <div class="card-meta mt-md">
-          <span class="tag">📹 ${videoCount} Videos</span>
-          <span class="tag">📦 ${resourceCount} Resources</span>
-        </div>
-      `;
+            // Render hero section
+            document.getElementById('courseTitle').textContent = course.title;
+            document.getElementById('courseDescription').textContent = course.description;
+            document.getElementById('courseStats').innerHTML = `
+                <div class="course-stat-badge">📹 ${videoCount} Videos</div>
+                <div class="course-stat-badge">📦 ${resourceCount} Resources</div>
+            `;
+
+            // Update section counts
+            document.getElementById('videoCount').textContent = `${videoCount} video${videoCount !== 1 ? 's' : ''}`;
+            document.getElementById('resourceCount').textContent = `${resourceCount} resource${resourceCount !== 1 ? 's' : ''}`;
 
             // Render videos
             const videoGrid = document.getElementById('videoGrid');
@@ -184,18 +518,20 @@
                 videoGrid.style.display = 'grid';
                 videosEmpty.style.display = 'none';
                 videoGrid.innerHTML = course.videos.map(video => `
-          <div class="video-card">
-            <div class="video-embed">
-              <iframe 
-                src="https://www.youtube.com/embed/${escapeHtml(video.youtubeId)}" 
-                title="${escapeHtml(video.title)}"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowfullscreen>
-              </iframe>
-            </div>
-            <div class="video-title">${escapeHtml(video.title)}</div>
-          </div>
-        `).join('');
+                    <div class="video-card-structured">
+                        <div class="video-embed">
+                            <iframe 
+                                src="https://www.youtube.com/embed/${escapeHtml(video.youtubeId)}" 
+                                title="${escapeHtml(video.title)}"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen>
+                            </iframe>
+                        </div>
+                        <div class="video-info">
+                            <div class="video-title">${escapeHtml(video.title)}</div>
+                        </div>
+                    </div>
+                `).join('');
             }
 
             // Render unified resources
@@ -206,41 +542,39 @@
                 resourcesList.style.display = 'none';
                 resourcesEmpty.style.display = 'block';
             } else {
-                resourcesList.style.display = 'flex';
+                resourcesList.style.display = 'grid';
                 resourcesEmpty.style.display = 'none';
 
                 const typeInfo = {
-                    textbook: { icon: '📚', label: 'Textbook', color: '#6BCB77' },
-                    ppt: { icon: '📊', label: 'PPT', color: '#4ECDC4' },
-                    flashcard: { icon: '🃏', label: 'Flashcards', color: '#FFD93D' },
-                    problemset: { icon: '📝', label: 'Problem Set', color: '#FF6B9D' },
-                    questionpaper: { icon: '📄', label: 'Question Paper', color: '#9B59B6' }
+                    textbook: { icon: '📚', label: 'Textbook', color: 'var(--accent-green-light)' },
+                    ppt: { icon: '📊', label: 'Presentation', color: 'var(--accent-cyan)' },
+                    flashcard: { icon: '🃏', label: 'Flashcards', color: 'var(--accent-yellow-light)' },
+                    problemset: { icon: '📝', label: 'Problem Set', color: 'var(--accent-pink-light)' },
+                    questionpaper: { icon: '📄', label: 'Past Paper', color: 'var(--accent-purple-light)' }
                 };
 
                 resourcesList.innerHTML = resources.map((resource, index) => {
-                    const info = typeInfo[resource.type] || { icon: '📁', label: resource.type, color: '#666' };
+                    const info = typeInfo[resource.type] || { icon: '📁', label: resource.type, color: 'var(--bg-secondary)' };
                     const isFlashcard = resource.type === 'flashcard';
                     const cardCount = isFlashcard && resource.cards ? resource.cards.length : 0;
 
-                    return `
-          <div class="resource-item">
-            <div class="resource-info">
-              <div class="resource-icon" style="background: ${info.color};">${info.icon}</div>
-              <div>
-                <span class="resource-title">${escapeHtml(resource.title)}</span>
-                <br><small style="color: #666;">${info.label}${isFlashcard ? ` • ${cardCount} cards` : ''}</small>
-              </div>
-            </div>
-            ${isFlashcard ?
-                            `<button onclick="openFlashcards(${index})" class="resource-link" style="border: 2px solid #1A1A1A; background: #FFD93D; cursor: pointer;">
-                Study Cards →
-              </button>` :
-                            `<a href="${escapeHtml(resource.driveLink || '')}" target="_blank" rel="noopener" class="resource-link">
-                Open in Drive →
-              </a>`
-                        }
-          </div>
-        `;
+                    if (isFlashcard) {
+                        return `
+                            <div class="resource-card" onclick="openFlashcards(${index})" style="cursor: pointer;">
+                                <div class="resource-card-icon" style="background: ${info.color};">${info.icon}</div>
+                                <div class="resource-card-title">${escapeHtml(resource.title)}</div>
+                                <div class="resource-card-type">${info.label} • ${cardCount} cards</div>
+                            </div>
+                        `;
+                    } else {
+                        return `
+                            <a href="${escapeHtml(resource.driveLink || '#')}" target="_blank" rel="noopener" class="resource-card">
+                                <div class="resource-card-icon" style="background: ${info.color};">${info.icon}</div>
+                                <div class="resource-card-title">${escapeHtml(resource.title)}</div>
+                                <div class="resource-card-type">${info.label}</div>
+                            </a>
+                        `;
+                    }
                 }).join('');
             }
 

@@ -1,10 +1,11 @@
-// Theme & Mobile Navigation Handler
-// Pro Bono - Enhanced for mobile responsiveness
+// Theme & Navigation Handler v3.0
+// Pro Bonana - Enhanced with QoL improvements
 
 (function () {
-    // Initialize theme on page load - keep light mode default
+    'use strict';
+
+    // Initialize theme on page load
     function initTheme() {
-        // Set to light theme by default
         document.documentElement.setAttribute('data-theme', 'light');
     }
 
@@ -15,68 +16,87 @@
 
         if (!navToggle || !mainNav) return;
 
-        // Toggle menu on button click
         navToggle.addEventListener('click', function (e) {
             e.stopPropagation();
             const isActive = navToggle.classList.toggle('active');
             mainNav.classList.toggle('active');
             navToggle.setAttribute('aria-expanded', isActive);
-
-            // Prevent body scroll when menu is open on mobile
-            if (isActive) {
-                document.body.style.overflow = 'hidden';
-            } else {
-                document.body.style.overflow = '';
-            }
+            document.body.style.overflow = isActive ? 'hidden' : '';
         });
 
-        // Close menu when clicking on a link
         const navLinks = mainNav.querySelectorAll('a');
         navLinks.forEach(function (link) {
             link.addEventListener('click', function () {
-                navToggle.classList.remove('active');
-                mainNav.classList.remove('active');
-                navToggle.setAttribute('aria-expanded', 'false');
-                document.body.style.overflow = '';
+                closeNav();
             });
         });
 
-        // Close menu when clicking outside
         document.addEventListener('click', function (e) {
             if (!mainNav.contains(e.target) && !navToggle.contains(e.target)) {
-                navToggle.classList.remove('active');
-                mainNav.classList.remove('active');
-                navToggle.setAttribute('aria-expanded', 'false');
-                document.body.style.overflow = '';
+                closeNav();
             }
         });
 
-        // Close menu on escape key
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape' && mainNav.classList.contains('active')) {
-                navToggle.classList.remove('active');
-                mainNav.classList.remove('active');
-                navToggle.setAttribute('aria-expanded', 'false');
-                document.body.style.overflow = '';
+                closeNav();
+                navToggle.focus();
             }
         });
 
-        // Handle resize - close menu if switching to desktop
+        function closeNav() {
+            navToggle.classList.remove('active');
+            mainNav.classList.remove('active');
+            navToggle.setAttribute('aria-expanded', 'false');
+            document.body.style.overflow = '';
+        }
+
         let resizeTimer;
         window.addEventListener('resize', function () {
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(function () {
                 if (window.innerWidth > 768) {
-                    navToggle.classList.remove('active');
-                    mainNav.classList.remove('active');
-                    navToggle.setAttribute('aria-expanded', 'false');
-                    document.body.style.overflow = '';
+                    closeNav();
                 }
             }, 100);
         });
     }
 
-    // Initialize smooth scroll for anchor links
+    // Scroll to Top Button
+    function initScrollToTop() {
+        // Create scroll-to-top button
+        const scrollBtn = document.createElement('button');
+        scrollBtn.className = 'scroll-to-top';
+        scrollBtn.innerHTML = '↑';
+        scrollBtn.setAttribute('aria-label', 'Scroll to top');
+        scrollBtn.setAttribute('title', 'Back to top');
+        document.body.appendChild(scrollBtn);
+
+        // Show/hide based on scroll position
+        let isScrolling = false;
+        window.addEventListener('scroll', function () {
+            if (!isScrolling) {
+                window.requestAnimationFrame(function () {
+                    if (window.scrollY > 400) {
+                        scrollBtn.classList.add('visible');
+                    } else {
+                        scrollBtn.classList.remove('visible');
+                    }
+                    isScrolling = false;
+                });
+                isScrolling = true;
+            }
+        }, { passive: true });
+
+        scrollBtn.addEventListener('click', function () {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    }
+
+    // Smooth scroll for anchor links
     function initSmoothScroll() {
         document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
             anchor.addEventListener('click', function (e) {
@@ -95,9 +115,8 @@
         });
     }
 
-    // Add touch feedback for better mobile UX
+    // Touch feedback for better mobile UX
     function initTouchFeedback() {
-        // Add active state class on touch for immediate visual feedback
         const touchElements = document.querySelectorAll('.btn, .card, .filter-pill, .nav-links a');
 
         touchElements.forEach(function (el) {
@@ -115,12 +134,76 @@
         });
     }
 
-    // Initialize all functionality when DOM is ready
+    // Animate elements on scroll
+    function initScrollAnimations() {
+        const animatedElements = document.querySelectorAll('.card, .mission-card, .value-item');
+
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            });
+
+            animatedElements.forEach(function (el, index) {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = 'opacity 0.5s ease ' + (index * 0.05) + 's, transform 0.5s ease ' + (index * 0.05) + 's';
+                observer.observe(el);
+            });
+        }
+    }
+
+    // Keyboard navigation enhancements
+    function initKeyboardNav() {
+        // Tab trap for modals (if any are open)
+        document.addEventListener('keydown', function (e) {
+            const modal = document.querySelector('.modal-overlay.show');
+            if (!modal) return;
+
+            if (e.key === 'Tab') {
+                const focusableElements = modal.querySelectorAll(
+                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                );
+                const firstEl = focusableElements[0];
+                const lastEl = focusableElements[focusableElements.length - 1];
+
+                if (e.shiftKey && document.activeElement === firstEl) {
+                    e.preventDefault();
+                    lastEl.focus();
+                } else if (!e.shiftKey && document.activeElement === lastEl) {
+                    e.preventDefault();
+                    firstEl.focus();
+                }
+            }
+        });
+    }
+
+    // Page load animation
+    function initPageAnimation() {
+        document.body.classList.add('page-enter');
+        setTimeout(function () {
+            document.body.classList.remove('page-enter');
+        }, 500);
+    }
+
+    // Initialize all functionality
     function init() {
         initTheme();
         initMobileNav();
+        initScrollToTop();
         initSmoothScroll();
         initTouchFeedback();
+        initScrollAnimations();
+        initKeyboardNav();
+        initPageAnimation();
     }
 
     if (document.readyState === 'loading') {
@@ -129,3 +212,4 @@
         init();
     }
 })();
+

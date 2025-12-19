@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Take certificate course and earn certification">
-    <title>Certificate Course | Pro Bono</title>
+    <title>Certificate Course | Pro Bonana</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -146,7 +146,7 @@
         <div class="container header-content">
             <a href="index.html" class="logo">
                 <div class="logo-icon">PB</div>
-                <span>Pro Bono</span>
+                <span>Pro Bonana</span>
             </a>
             <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
                 <span></span>
@@ -491,81 +491,109 @@
             const width = 297;
             const height = 210;
 
-            // Background
-            doc.setFillColor(255, 252, 240);
+            // Background - warm cream color
+            doc.setFillColor(255, 253, 247);
             doc.rect(0, 0, width, height, 'F');
 
-            // Border
-            doc.setDrawColor(26, 26, 26);
+            // Outer Border
+            doc.setDrawColor(24, 24, 27);
             doc.setLineWidth(3);
             doc.rect(10, 10, width - 20, height - 20);
             doc.setLineWidth(1);
             doc.rect(15, 15, width - 30, height - 30);
 
-            // Header
+            // PB Logo - Black background with yellow text (top left corner)
+            const logoX = 25;
+            const logoY = 25;
+            const logoSize = 20;
+
+            // Black rounded rectangle background
+            doc.setFillColor(24, 24, 27);
+            doc.roundedRect(logoX, logoY, logoSize, logoSize, 3, 3, 'F');
+
+            // Yellow "PB" text
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.setTextColor(251, 191, 36); // Yellow
+            doc.text('PB', logoX + logoSize / 2, logoY + logoSize / 2 + 4, { align: 'center' });
+
+            // Header - next to logo
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(14);
-            doc.setTextColor(107, 114, 128);
-            doc.text('PRO BONO EDUCATION', width / 2, 35, { align: 'center' });
+            doc.setTextColor(113, 113, 122);
+            doc.text('PRO BONANA EDUCATION', width / 2, 35, { align: 'center' });
 
             // Certificate Title
             doc.setFontSize(42);
-            doc.setTextColor(26, 26, 26);
+            doc.setTextColor(24, 24, 27);
             doc.text('CERTIFICATE', width / 2, 55, { align: 'center' });
 
             doc.setFontSize(18);
-            doc.setTextColor(107, 114, 128);
+            doc.setTextColor(113, 113, 122);
             doc.text('OF COMPLETION', width / 2, 65, { align: 'center' });
 
-            // Decorative line
-            doc.setDrawColor(139, 92, 246);
+            // Decorative gradient-like line (using multiple colors)
             doc.setLineWidth(2);
-            doc.line(80, 75, width - 80, 75);
+            const lineY = 75;
+            const lineStartX = 80;
+            const lineEndX = width - 80;
+            const lineLength = lineEndX - lineStartX;
+
+            // Draw gradient effect with segments
+            doc.setDrawColor(251, 191, 36); // Yellow
+            doc.line(lineStartX, lineY, lineStartX + lineLength * 0.25, lineY);
+            doc.setDrawColor(52, 211, 153); // Green
+            doc.line(lineStartX + lineLength * 0.25, lineY, lineStartX + lineLength * 0.5, lineY);
+            doc.setDrawColor(34, 211, 238); // Cyan  
+            doc.line(lineStartX + lineLength * 0.5, lineY, lineStartX + lineLength * 0.75, lineY);
+            doc.setDrawColor(167, 139, 250); // Purple
+            doc.line(lineStartX + lineLength * 0.75, lineY, lineEndX, lineY);
 
             // Recipient
             doc.setFontSize(14);
-            doc.setTextColor(107, 114, 128);
+            doc.setTextColor(113, 113, 122);
             doc.text('This is to certify that', width / 2, 90, { align: 'center' });
 
             doc.setFontSize(28);
-            doc.setTextColor(26, 26, 26);
+            doc.setTextColor(24, 24, 27);
             doc.setFont('helvetica', 'bold');
             const userName = userEmail.split('@')[0].replace(/[._]/g, ' ').toUpperCase();
             doc.text(userName, width / 2, 105, { align: 'center' });
 
             // Course
             doc.setFontSize(14);
-            doc.setTextColor(107, 114, 128);
+            doc.setTextColor(113, 113, 122);
             doc.setFont('helvetica', 'normal');
             doc.text('has successfully completed the course', width / 2, 118, { align: 'center' });
 
             doc.setFontSize(20);
-            doc.setTextColor(139, 92, 246);
+            doc.setTextColor(167, 139, 250);
             doc.setFont('helvetica', 'bold');
             doc.text(currentCourse.title, width / 2, 132, { align: 'center' });
 
             // Date and ID
             doc.setFontSize(11);
-            doc.setTextColor(107, 114, 128);
+            doc.setTextColor(113, 113, 122);
             doc.setFont('helvetica', 'normal');
             const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
             doc.text(`Issued: ${date}`, 60, 165);
             doc.text(`Certificate ID: ${userProgress.certificateId}`, width - 60, 165, { align: 'right' });
 
             // Signature line
-            doc.setDrawColor(26, 26, 26);
+            doc.setDrawColor(24, 24, 27);
             doc.setLineWidth(0.5);
             doc.line(width / 2 - 40, 175, width / 2 + 40, 175);
             doc.setFontSize(10);
-            doc.text('Pro Bono Team', width / 2, 182, { align: 'center' });
+            doc.setTextColor(24, 24, 27);
+            doc.text('Pro Bonana Team', width / 2, 182, { align: 'center' });
 
             // Verification URL
             doc.setFontSize(9);
-            doc.setTextColor(139, 92, 246);
+            doc.setTextColor(167, 139, 250);
             doc.text(`Verify at: ${window.location.origin}/verify-certificate.html?id=${userProgress.certificateId}`, width / 2, 195, { align: 'center' });
 
             // Save
-            doc.save(`ProBono_Certificate_${userProgress.certificateId}.pdf`);
+            doc.save(`ProBonana_Certificate_${userProgress.certificateId}.pdf`);
         }
     </script>
     <script src="theme.js"></script>
