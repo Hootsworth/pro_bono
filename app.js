@@ -1175,3 +1175,348 @@ async function getUserCertificatesAsync(userEmail) {
     return [];
   }
 }
+
+// ===== BOOKMARKS (localStorage-based) =====
+
+const BOOKMARKS_KEY = 'probonana_bookmarks';
+
+function getBookmarks() {
+  try {
+    const stored = localStorage.getItem(BOOKMARKS_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error('Error reading bookmarks:', error);
+    return [];
+  }
+}
+
+function saveBookmarks(bookmarks) {
+  try {
+    localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(bookmarks));
+    return true;
+  } catch (error) {
+    console.error('Error saving bookmarks:', error);
+    return false;
+  }
+}
+
+function isBookmarked(courseId) {
+  const bookmarks = getBookmarks();
+  return bookmarks.includes(courseId);
+}
+
+function toggleBookmark(courseId) {
+  const bookmarks = getBookmarks();
+  const index = bookmarks.indexOf(courseId);
+
+  if (index > -1) {
+    bookmarks.splice(index, 1);
+    saveBookmarks(bookmarks);
+    return false; // Now not bookmarked
+  } else {
+    bookmarks.push(courseId);
+    saveBookmarks(bookmarks);
+    return true; // Now bookmarked
+  }
+}
+
+function addBookmark(courseId) {
+  const bookmarks = getBookmarks();
+  if (!bookmarks.includes(courseId)) {
+    bookmarks.push(courseId);
+    saveBookmarks(bookmarks);
+  }
+  return true;
+}
+
+function removeBookmark(courseId) {
+  const bookmarks = getBookmarks();
+  const index = bookmarks.indexOf(courseId);
+  if (index > -1) {
+    bookmarks.splice(index, 1);
+    saveBookmarks(bookmarks);
+  }
+  return false;
+}
+
+// ===== ANNOUNCEMENTS (Firestore-based) =====
+
+const ANNOUNCEMENTS_COLLECTION = 'announcements';
+
+const ANNOUNCEMENT_TYPES = {
+  info: { label: 'Info', icon: 'ℹ️', color: '#4ECDC4' },
+  success: { label: 'Success', icon: '✅', color: '#6BCB77' },
+  warning: { label: 'Warning', icon: '⚠️', color: '#FFD93D' },
+  alert: { label: 'Alert', icon: '🚨', color: '#FF6B9D' },
+  event: { label: 'Event', icon: '🎉', color: '#A66CFF' }
+};
+
+// Get all active announcements (for public display)
+async function getActiveAnnouncementsAsync() {
+  try {
+    const snapshot = await firebaseDb.collection(ANNOUNCEMENTS_COLLECTION)
+      .where('active', '==', true)
+      .orderBy('createdAt', 'desc')
+      .get();
+
+    const announcements = [];
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      // Check if announcement has expired
+      if (data.expiresAt) {
+        const expiryDate = data.expiresAt.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt);
+        if (expiryDate < new Date()) {
+          return; // Skip expired announcements
+        }
+      }
+      announcements.push({ id: doc.id, ...data });
+    });
+    return announcements;
+  } catch (error) {
+    console.error('Error fetching announcements:', error);
+    return [];
+  }
+}
+
+// Get all announcements (for admin)
+async function getAllAnnouncementsAsync() {
+  try {
+    const snapshot = await firebaseDb.collection(ANNOUNCEMENTS_COLLECTION)
+      .orderBy('createdAt', 'desc')
+      .get();
+
+    const announcements = [];
+    snapshot.forEach(doc => {
+      announcements.push({ id: doc.id, ...doc.data() });
+    });
+    return announcements;
+  } catch (error) {
+    console.error('Error fetching all announcements:', error);
+    return [];
+  }
+}
+
+// Create announcement (Admin only)
+async function createAnnouncementAsync(announcementData) {
+  const adminInfo = await getCurrentAdminInfo();
+  if (!adminInfo) {
+    console.error('Only admins can create announcements');
+    return null;
+  }
+
+  try {
+    const newAnnouncement = {
+      title: announcementData.title,
+      message: announcementData.message,
+      type: announcementData.type || 'info',
+      active: announcementData.active !== false,
+      expiresAt: announcementData.expiresAt || null,
+      createdBy: firebaseAuth.currentUser.email,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    const docRef = await firebaseDb.collection(ANNOUNCEMENTS_COLLECTION).add(newAnnouncement);
+    return { id: docRef.id, ...newAnnouncement };
+  } catch (error) {
+    console.error('Error creating announcement:', error);
+    return null;
+  }
+}
+
+// Update announcement (Admin only)
+async function updateAnnouncementAsync(announcementId, updates) {
+  const adminInfo = await getCurrentAdminInfo();
+  if (!adminInfo) {
+    console.error('Only admins can update announcements');
+    return false;
+  }
+
+  try {
+    await firebaseDb.collection(ANNOUNCEMENTS_COLLECTION).doc(announcementId).update({
+      ...updates,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    return true;
+  } catch (error) {
+    console.error('Error updating announcement:', error);
+    return false;
+  }
+}
+
+// Delete announcement (Admin only)
+async function deleteAnnouncementAsync(announcementId) {
+  const adminInfo = await getCurrentAdminInfo();
+  if (!adminInfo) {
+    console.error('Only admins can delete announcements');
+    return false;
+  }
+
+  try {
+    await firebaseDb.collection(ANNOUNCEMENTS_COLLECTION).doc(announcementId).delete();
+    return true;
+  } catch (error) {
+    console.error('Error deleting announcement:', error);
+    return false;
+  }
+}
+
+// Toggle announcement active status
+async function toggleAnnouncementActiveAsync(announcementId, active) {
+  return await updateAnnouncementAsync(announcementId, { active });
+}
+
+// ===== RESOURCE RATINGS (Firestore-based) =====
+
+const RATINGS_COLLECTION = 'courseRatings';
+
+// Get ratings for a course
+async function getCourseRatingsAsync(courseId) {
+  try {
+    const snapshot = await firebaseDb.collection(RATINGS_COLLECTION)
+      .where('courseId', '==', courseId)
+      .get();
+
+    const ratings = [];
+    snapshot.forEach(doc => {
+      ratings.push({ id: doc.id, ...doc.data() });
+    });
+    return ratings;
+  } catch (error) {
+    console.error('Error fetching course ratings:', error);
+    return [];
+  }
+}
+
+// Get average rating for a course
+async function getCourseAverageRatingAsync(courseId) {
+  try {
+    const ratings = await getCourseRatingsAsync(courseId);
+    if (ratings.length === 0) {
+      return { average: 0, count: 0 };
+    }
+
+    const sum = ratings.reduce((acc, r) => acc + r.rating, 0);
+    return {
+      average: Math.round((sum / ratings.length) * 10) / 10,
+      count: ratings.length
+    };
+  } catch (error) {
+    console.error('Error calculating average rating:', error);
+    return { average: 0, count: 0 };
+  }
+}
+
+// Get ratings for multiple courses (bulk operation for efficiency)
+async function getBulkCourseRatingsAsync(courseIds) {
+  if (!courseIds || courseIds.length === 0) return {};
+
+  try {
+    // Firestore 'in' query is limited to 10 items, so we batch
+    const batches = [];
+    for (let i = 0; i < courseIds.length; i += 10) {
+      batches.push(courseIds.slice(i, i + 10));
+    }
+
+    const ratingsMap = {};
+    courseIds.forEach(id => {
+      ratingsMap[id] = { average: 0, count: 0, sum: 0 };
+    });
+
+    for (const batch of batches) {
+      const snapshot = await firebaseDb.collection(RATINGS_COLLECTION)
+        .where('courseId', 'in', batch)
+        .get();
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        if (ratingsMap[data.courseId]) {
+          ratingsMap[data.courseId].count++;
+          ratingsMap[data.courseId].sum += data.rating;
+        }
+      });
+    }
+
+    // Calculate averages
+    for (const id of courseIds) {
+      if (ratingsMap[id].count > 0) {
+        ratingsMap[id].average = Math.round((ratingsMap[id].sum / ratingsMap[id].count) * 10) / 10;
+      }
+      delete ratingsMap[id].sum;
+    }
+
+    return ratingsMap;
+  } catch (error) {
+    console.error('Error fetching bulk ratings:', error);
+    return {};
+  }
+}
+
+// Get user's rating for a specific course
+async function getUserRatingAsync(courseId, visitorId) {
+  try {
+    const snapshot = await firebaseDb.collection(RATINGS_COLLECTION)
+      .where('courseId', '==', courseId)
+      .where('visitorId', '==', visitorId)
+      .limit(1)
+      .get();
+
+    if (!snapshot.empty) {
+      const doc = snapshot.docs[0];
+      return { id: doc.id, ...doc.data() };
+    }
+    return null;
+  } catch (error) {
+    console.error('Error fetching user rating:', error);
+    return null;
+  }
+}
+
+// Submit or update a rating
+async function submitRatingAsync(courseId, rating, comment = '') {
+  // Generate or get visitor ID from localStorage
+  let visitorId = localStorage.getItem('probonana_visitor_id');
+  if (!visitorId) {
+    visitorId = 'visitor_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('probonana_visitor_id', visitorId);
+  }
+
+  try {
+    // Check if user already rated this course
+    const existingRating = await getUserRatingAsync(courseId, visitorId);
+
+    if (existingRating) {
+      // Update existing rating
+      await firebaseDb.collection(RATINGS_COLLECTION).doc(existingRating.id).update({
+        rating,
+        comment,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      return { updated: true, rating };
+    } else {
+      // Create new rating
+      const newRating = {
+        courseId,
+        visitorId,
+        rating,
+        comment,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      const docRef = await firebaseDb.collection(RATINGS_COLLECTION).add(newRating);
+      return { updated: false, id: docRef.id, rating };
+    }
+  } catch (error) {
+    console.error('Error submitting rating:', error);
+    return null;
+  }
+}
+
+// Get visitor ID for consistency
+function getVisitorId() {
+  let visitorId = localStorage.getItem('probonana_visitor_id');
+  if (!visitorId) {
+    visitorId = 'visitor_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('probonana_visitor_id', visitorId);
+  }
+  return visitorId;
+}

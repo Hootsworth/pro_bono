@@ -206,6 +206,7 @@ function showView(viewName) {
     document.getElementById('adminsView').style.display = 'none';
     document.getElementById('applicationsView').style.display = 'none';
     document.getElementById('certCoursesView').style.display = 'none';
+    document.getElementById('announcementsView').style.display = 'none';
 
     // Remove active class from nav
     document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
@@ -229,6 +230,7 @@ function showView(viewName) {
     if (viewName === 'admins') renderAdminsList();
     if (viewName === 'applications') renderApplicationsList();
     if (viewName === 'certCourses') renderCertCoursesList();
+    if (viewName === 'announcements') renderAnnouncementsList();
 }
 
 // ===== Courses Table =====
@@ -1522,3 +1524,150 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// ===== Announcements Management =====
+let cachedAnnouncements = [];
+
+async function renderAnnouncementsList() {
+    cachedAnnouncements = await getAllAnnouncementsAsync();
+    const list = document.getElementById('announcementsList');
+    const emptyState = document.getElementById('announcementsEmpty');
+
+    if (cachedAnnouncements.length === 0) {
+        list.style.display = 'none';
+        emptyState.style.display = 'block';
+        return;
+    }
+
+    list.style.display = 'flex';
+    emptyState.style.display = 'none';
+
+    const typeInfo = {
+        info: { icon: 'ℹ️', color: 'var(--accent-cyan)', label: 'Info' },
+        success: { icon: '✅', color: 'var(--accent-green)', label: 'Success' },
+        warning: { icon: '⚠️', color: 'var(--accent-yellow)', label: 'Warning' },
+        alert: { icon: '🚨', color: 'var(--accent-pink)', label: 'Alert' },
+        event: { icon: '🎉', color: 'var(--accent-purple)', label: 'Event' }
+    };
+
+    list.innerHTML = cachedAnnouncements.map(ann => {
+        const info = typeInfo[ann.type] || typeInfo.info;
+        const expiryText = ann.expiresAt ?
+            (new Date(ann.expiresAt.toDate ? ann.expiresAt.toDate() : ann.expiresAt) < new Date() ?
+                '<span style="color: var(--accent-red);">Expired</span>' :
+                `Expires: ${new Date(ann.expiresAt.toDate ? ann.expiresAt.toDate() : ann.expiresAt).toLocaleDateString()}`)
+            : 'No expiry';
+
+        return `
+        <div class="resource-item" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+            <div style="display: flex; justify-content: space-between; width: 100%; align-items: flex-start;">
+                <div class="resource-info" style="align-items: flex-start;">
+                    <div class="resource-icon" style="background: ${info.color};">${info.icon}</div>
+                    <div>
+                        <span class="resource-title" style="font-size: 1rem;">${escapeHtml(ann.title)}</span>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 4px 0; max-width: 400px;">${escapeHtml(ann.message)}</p>
+                        <p style="font-size: 0.75rem; color: var(--text-muted);">
+                            ${info.label} • ${ann.active ? '<span style="color: var(--accent-green);">✓ Active</span>' : '<span style="color: var(--text-muted);">Inactive</span>'} • ${expiryText}
+                        </p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button class="btn ${ann.active ? '' : 'btn-success'}" style="padding: 6px 12px; font-size: 0.8rem;" onclick="toggleAnnouncementActive('${ann.id}', ${!ann.active})">
+                        ${ann.active ? '🔕 Deactivate' : '🔔 Activate'}
+                    </button>
+                    <button class="btn" style="padding: 6px 12px; font-size: 0.8rem;" onclick="editAnnouncement('${ann.id}')">Edit</button>
+                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem;" onclick="confirmDeleteAnnouncement('${ann.id}')">Delete</button>
+                </div>
+            </div>
+        </div>
+        `;
+    }).join('');
+}
+
+function openAnnouncementModal(announcementId = null) {
+    document.getElementById('announcementId').value = announcementId || '';
+    document.getElementById('announcementTitle').value = '';
+    document.getElementById('announcementMessage').value = '';
+    document.getElementById('announcementType').value = 'info';
+    document.getElementById('announcementExpires').value = '';
+    document.getElementById('announcementActive').checked = true;
+    document.getElementById('announcementModalTitle').textContent = announcementId ? '📢 Edit Announcement' : '📢 Create Announcement';
+    document.getElementById('announcementModal').classList.add('show');
+}
+
+function closeAnnouncementModal() {
+    document.getElementById('announcementModal').classList.remove('show');
+}
+
+async function saveAnnouncement() {
+    const id = document.getElementById('announcementId').value;
+    const title = document.getElementById('announcementTitle').value.trim();
+    const message = document.getElementById('announcementMessage').value.trim();
+    const type = document.getElementById('announcementType').value;
+    const expiresInput = document.getElementById('announcementExpires').value;
+    const active = document.getElementById('announcementActive').checked;
+
+    if (!title || !message) {
+        alert('Please fill in both title and message.');
+        return;
+    }
+
+    const announcementData = {
+        title,
+        message,
+        type,
+        active,
+        expiresAt: expiresInput ? new Date(expiresInput) : null
+    };
+
+    let result;
+    if (id) {
+        result = await updateAnnouncementAsync(id, announcementData);
+    } else {
+        result = await createAnnouncementAsync(announcementData);
+    }
+
+    if (result) {
+        closeAnnouncementModal();
+        await renderAnnouncementsList();
+        alert(id ? 'Announcement updated!' : 'Announcement created!');
+    } else {
+        alert('Error saving announcement. Make sure you have admin permissions.');
+    }
+}
+
+function editAnnouncement(announcementId) {
+    const ann = cachedAnnouncements.find(a => a.id === announcementId);
+    if (!ann) return;
+
+    openAnnouncementModal(announcementId);
+    document.getElementById('announcementTitle').value = ann.title;
+    document.getElementById('announcementMessage').value = ann.message;
+    document.getElementById('announcementType').value = ann.type || 'info';
+    document.getElementById('announcementActive').checked = ann.active !== false;
+
+    if (ann.expiresAt) {
+        const expiryDate = ann.expiresAt.toDate ? ann.expiresAt.toDate() : new Date(ann.expiresAt);
+        document.getElementById('announcementExpires').value = expiryDate.toISOString().split('T')[0];
+    }
+}
+
+async function toggleAnnouncementActive(announcementId, newState) {
+    const result = await toggleAnnouncementActiveAsync(announcementId, newState);
+    if (result) {
+        await renderAnnouncementsList();
+    } else {
+        alert('Error updating announcement status.');
+    }
+}
+
+async function confirmDeleteAnnouncement(announcementId) {
+    if (confirm('Delete this announcement? This cannot be undone.')) {
+        const result = await deleteAnnouncementAsync(announcementId);
+        if (result) {
+            await renderAnnouncementsList();
+        } else {
+            alert('Error deleting announcement.');
+        }
+    }
+}

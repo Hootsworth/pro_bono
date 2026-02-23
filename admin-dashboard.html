@@ -44,6 +44,8 @@
             <ul class="sidebar-nav">
                 <li><a href="#" class="active" data-view="courses" onclick="showView('courses')">📚 Manage Courses</a>
                 </li>
+                <li id="announcementsNavItem"><a href="#" data-view="announcements"
+                        onclick="showView('announcements')">📢 Announcements</a></li>
                 <li id="universitiesNavItem" style="display: none;"><a href="#" data-view="universities"
                         onclick="showView('universities')">🏫 Universities</a></li>
                 <li id="timetablesNavItem"><a href="#" data-view="timetables" onclick="showView('timetables')">📅
@@ -285,6 +287,24 @@
                     <div class="empty-state-icon">🏆</div>
                     <h3>No Certificate Courses Yet</h3>
                     <p>Create your first certificate course with modules and quizzes.</p>
+                </div>
+            </div>
+
+            <!-- Announcements View -->
+            <div id="announcementsView" style="display: none;">
+                <div class="admin-header">
+                    <h1>📢 Announcements</h1>
+                    <button class="btn btn-primary" onclick="openAnnouncementModal()">+ New Announcement</button>
+                </div>
+                <p class="mb-md" style="color: var(--text-secondary);">Create announcements that appear on the homepage
+                    banner. Users can dismiss them individually.</p>
+
+                <div id="announcementsList" class="resource-list"></div>
+
+                <div class="empty-state" id="announcementsEmpty" style="display: none;">
+                    <div class="empty-state-icon">📢</div>
+                    <h3>No Announcements Yet</h3>
+                    <p>Create your first announcement to display on the homepage.</p>
                 </div>
             </div>
         </main>
@@ -695,6 +715,54 @@
             <div class="modal-footer">
                 <button class="btn" onclick="closeAdminLiteModal()">Cancel</button>
                 <button class="btn btn-primary" onclick="saveAdminLite()">Add Admin Lite</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Announcement Modal -->
+    <div class="modal-overlay" id="announcementModal">
+        <div class="modal" style="max-width: 500px;">
+            <div class="modal-header" style="background: var(--accent-yellow);">
+                <h3 class="modal-title" id="announcementModalTitle">📢 Create Announcement</h3>
+                <button class="modal-close" onclick="closeAnnouncementModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="announcementId">
+                <div class="form-group">
+                    <label class="form-label" for="announcementTitle">Title *</label>
+                    <input type="text" id="announcementTitle" class="form-input"
+                        placeholder="e.g., New Course Available!">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="announcementMessage">Message *</label>
+                    <textarea id="announcementMessage" class="form-textarea"
+                        placeholder="Enter your announcement message..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="announcementType">Type</label>
+                    <select id="announcementType" class="form-select">
+                        <option value="info">ℹ️ Info (Cyan)</option>
+                        <option value="success">✅ Success (Green)</option>
+                        <option value="warning">⚠️ Warning (Yellow)</option>
+                        <option value="alert">🚨 Alert (Pink)</option>
+                        <option value="event">🎉 Event (Purple)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="announcementExpires">Expires On (Optional)</label>
+                    <input type="date" id="announcementExpires" class="form-input">
+                    <small style="color: var(--text-muted);">Leave empty for no expiration</small>
+                </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: var(--space-sm); cursor: pointer;">
+                        <input type="checkbox" id="announcementActive" checked style="width: 18px; height: 18px;">
+                        <span>Active (visible on homepage)</span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeAnnouncementModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveAnnouncement()">Save Announcement</button>
             </div>
         </div>
     </div>

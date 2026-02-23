@@ -64,14 +64,26 @@
     </div>
   </header>
 
+  <!-- Announcements Banner (dynamically populated) -->
+  <div id="announcementsBanner" class="announcements-banner" style="display: none;">
+    <div class="container">
+      <div class="announcements-container" id="announcementsContainer">
+        <!-- Announcements will be dynamically inserted here -->
+      </div>
+    </div>
+  </div>
 
   <!-- Hero Section -->
   <section class="hero">
     <div class="container">
       <h1>🍌 Pro Bonana</h1>
-      <p class="hero-subtitle">Your free gateway to quality education</p>
-      <p class="hero-description">Access curated courses, video lectures, question papers, and problem sets — all
-        completely free. Go bananas for learning!</p>
+      <p class="hero-subtitle">Your gateway to quality education 🍌</p>
+      <p class="hero-description">Peel back the layers of quality education with curated courses, video lectures, and
+        resources—all 100% free. Go bananas!</p>
+      <div class="floating-banana" style="top: 10%; left: 5%; animation-delay: 0s;">🍌</div>
+      <div class="floating-banana" style="top: 20%; right: 8%; animation-delay: -2s;">🍌</div>
+      <div class="floating-banana" style="bottom: 15%; left: 12%; animation-delay: -4s;">🍌</div>
+
     </div>
   </section>
 
@@ -104,6 +116,12 @@
           <span class="search-icon">🔍</span>
           <input type="text" class="search-input" id="searchInput" placeholder="Search courses...">
         </div>
+
+        <!-- Bookmarks Filter -->
+        <button class="bookmark-filter-btn" id="bookmarksFilter" onclick="toggleBookmarksFilter()">
+          🔖 Bookmarks
+          <span class="bookmark-count" id="bookmarkCount">0</span>
+        </button>
 
         <div class="filter-group">
           <span class="filter-label">Major:</span>
@@ -176,18 +194,30 @@
   <script>
     // State
     let allCourses = [];
+    let courseRatings = {};
     let activeMajor = 'all';
     let activeSemester = 'all';
     let activeSubject = 'all';
     let searchTerm = '';
+    let showBookmarksOnly = false;
 
     // Initialize dashboard
     document.addEventListener('DOMContentLoaded', async () => {
       try {
+        // Load announcements
+        loadAnnouncements();
+
         allCourses = await getCoursesAsync();
+
+        // Fetch ratings for all courses
+        const courseIds = allCourses.map(c => c.id);
+        courseRatings = await getBulkCourseRatingsAsync(courseIds);
 
         // Build filter pills
         buildFilters();
+
+        // Update bookmark count
+        updateBookmarkCount();
 
         // Render courses
         renderCourses();
@@ -209,6 +239,94 @@
         document.getElementById('loader').classList.add('hidden');
       }
     });
+
+    // Load and display announcements
+    async function loadAnnouncements() {
+      try {
+        const announcements = await getActiveAnnouncementsAsync();
+        if (announcements.length === 0) return;
+
+        const banner = document.getElementById('announcementsBanner');
+        const container = document.getElementById('announcementsContainer');
+
+        // Set banner type based on first announcement
+        banner.className = 'announcements-banner type-' + (announcements[0].type || 'info');
+
+        container.innerHTML = announcements.map(a => {
+          const typeInfo = ANNOUNCEMENT_TYPES[a.type] || ANNOUNCEMENT_TYPES.info;
+          return `
+            <div class="announcement-item" data-id="${a.id}">
+              <span class="announcement-icon">${typeInfo.icon}</span>
+              <div class="announcement-content">
+                <div class="announcement-title">${escapeHtml(a.title)}</div>
+                <div class="announcement-message">${escapeHtml(a.message)}</div>
+              </div>
+              <button class="announcement-close" onclick="dismissAnnouncement('${a.id}')" title="Dismiss">×</button>
+            </div>
+          `;
+        }).join('');
+
+        banner.style.display = 'block';
+      } catch (error) {
+        console.error('Error loading announcements:', error);
+      }
+    }
+
+    function dismissAnnouncement(id) {
+      const item = document.querySelector(`.announcement-item[data-id="${id}"]`);
+      if (item) {
+        item.style.animation = 'fadeOut 0.3s ease forwards';
+        setTimeout(() => {
+          item.remove();
+          // Hide banner if no more announcements
+          const container = document.getElementById('announcementsContainer');
+          if (container.children.length === 0) {
+            document.getElementById('announcementsBanner').style.display = 'none';
+          }
+        }, 300);
+      }
+    }
+
+    // Bookmark functions
+    function updateBookmarkCount() {
+      const bookmarks = getBookmarks();
+      document.getElementById('bookmarkCount').textContent = bookmarks.length;
+    }
+
+    function toggleBookmarksFilter() {
+      showBookmarksOnly = !showBookmarksOnly;
+      const btn = document.getElementById('bookmarksFilter');
+      btn.classList.toggle('active', showBookmarksOnly);
+      renderCourses();
+    }
+
+    function handleBookmarkClick(e, courseId) {
+      e.stopPropagation();
+      const isNowBookmarked = toggleBookmark(courseId);
+      const btn = e.target;
+      btn.classList.toggle('active', isNowBookmarked);
+      btn.textContent = isNowBookmarked ? '🔖' : '🏷️';
+      updateBookmarkCount();
+      showToast(isNowBookmarked ? 'Course bookmarked!' : 'Bookmark removed', 'success');
+    }
+
+    // Rating display helper
+    function renderStars(rating, count = 0) {
+      if (!rating || rating === 0) {
+        return '<span class="star-display"><span class="star empty">☆</span><span class="star empty">☆</span><span class="star empty">☆</span><span class="star empty">☆</span><span class="star empty">☆</span></span><span class="rating-count">(No ratings)</span>';
+      }
+      let stars = '';
+      for (let i = 1; i <= 5; i++) {
+        if (i <= Math.floor(rating)) {
+          stars += '<span class="star">★</span>';
+        } else if (i - 0.5 <= rating) {
+          stars += '<span class="star half">☆</span>';
+        } else {
+          stars += '<span class="star empty">☆</span>';
+        }
+      }
+      return `<span class="star-display">${stars}</span><span class="rating-value">${rating.toFixed(1)}</span><span class="rating-count">(${count})</span>`;
+    }
 
     function buildFilters() {
       // Get unique majors, semesters, and subjects from courses
@@ -290,7 +408,9 @@
       activeSemester = 'all';
       activeSubject = 'all';
       searchTerm = '';
+      showBookmarksOnly = false;
       document.getElementById('searchInput').value = '';
+      document.getElementById('bookmarksFilter').classList.remove('active');
       document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
       document.querySelector('#majorFilters .filter-pill[data-filter="all"]').classList.add('active');
       document.querySelector('#semesterFilters .filter-pill[data-filter="all"]').classList.add('active');
@@ -299,17 +419,19 @@
     }
 
     function getFilteredCourses() {
+      const bookmarks = getBookmarks();
       return allCourses.filter(course => {
         const matchesMajor = activeMajor === 'all' || course.major === activeMajor;
         const matchesSemester = activeSemester === 'all' || course.semester === activeSemester;
         const matchesSubject = activeSubject === 'all' || course.subject === activeSubject;
+        const matchesBookmark = !showBookmarksOnly || bookmarks.includes(course.id);
         const matchesSearch = !searchTerm ||
           course.title.toLowerCase().includes(searchTerm) ||
           course.description.toLowerCase().includes(searchTerm) ||
           (course.instructor && course.instructor.toLowerCase().includes(searchTerm)) ||
           (course.major && course.major.toLowerCase().includes(searchTerm));
 
-        return matchesMajor && matchesSemester && matchesSubject && matchesSearch;
+        return matchesMajor && matchesSemester && matchesSubject && matchesBookmark && matchesSearch;
       });
     }
 
@@ -327,23 +449,36 @@
       courseGrid.style.display = 'grid';
       emptyState.style.display = 'none';
 
-      courseGrid.innerHTML = filteredCourses.map(course => `
-        <div class="card course-card" onclick="window.location.href='course.html?id=${course.id}'">
-          <div class="card-header" style="background: ${course.color};"></div>
-          <div style="display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap;">
-            ${course.semester ? `<span class="badge badge-semester">${escapeHtml(course.semester)}</span>` : ''}
-            ${course.subject ? `<span class="badge badge-subject">${escapeHtml(course.subject)}</span>` : ''}
+      courseGrid.innerHTML = filteredCourses.map(course => {
+        const bookmarked = isBookmarked(course.id);
+        const ratingData = courseRatings[course.id] || { average: 0, count: 0 };
+        return `
+          <div class="course-card" onclick="window.location.href='course.html?id=${course.id}'">
+            <button class="bookmark-btn ${bookmarked ? 'active' : ''}" onclick="handleBookmarkClick(event, '${course.id}')" title="${bookmarked ? 'Remove bookmark' : 'Add bookmark'}">
+              ${bookmarked ? '🔖' : '🏷️'}
+            </button>
+            <div class="card-header" style="background: ${course.color};"></div>
+            <div class="course-card-content">
+              <div style="display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap;">
+                ${course.semester ? `<span class="badge badge-semester">${escapeHtml(course.semester)}</span>` : ''}
+                ${course.subject ? `<span class="badge badge-subject">${escapeHtml(course.subject)}</span>` : ''}
+              </div>
+              <h3 class="card-title">${escapeHtml(course.title)}</h3>
+              <p class="card-description">${escapeHtml(course.description)}</p>
+              ${course.instructor ? `<p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">👤 ${escapeHtml(course.instructor)}</p>` : ''}
+              <div class="card-meta">
+                <span class="tag">📹 ${course.videos?.length || 0}</span>
+                <span class="tag">📄 ${course.questionPapers?.length || 0}</span>
+                <span class="tag">📝 ${course.problemSets?.length || 0}</span>
+              </div>
+              <div class="course-card-rating" style="margin-top: auto; padding-top: var(--space-sm);">
+                ${renderStars(ratingData.average, ratingData.count)}
+              </div>
+            </div>
           </div>
-          <h3 class="card-title">${escapeHtml(course.title)}</h3>
-          <p class="card-description">${escapeHtml(course.description)}</p>
-          ${course.instructor ? `<p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">👤 ${escapeHtml(course.instructor)}</p>` : ''}
-          <div class="card-meta">
-            <span class="tag">📹 ${course.videos?.length || 0} Videos</span>
-            <span class="tag">📄 ${course.questionPapers?.length || 0} Papers</span>
-            <span class="tag">📝 ${course.problemSets?.length || 0} Problems</span>
-          </div>
-        </div>
-      `).join('');
+        `;
+
+      }).join('');
     }
 
     function updateStats() {

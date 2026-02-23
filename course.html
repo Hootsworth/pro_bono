@@ -350,7 +350,14 @@
     <section class="course-hero" id="courseHero" style="display: none;">
         <div class="container">
             <div class="course-hero-content">
-                <a href="index.html" class="back-link-hero">← Back to Courses</a>
+                <div
+                    style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: var(--space-md);">
+                    <a href="index.html" class="back-link-hero">← Back to Courses</a>
+                    <button class="bookmark-btn" id="heroBookmarkBtn" onclick="handleHeroBookmark()"
+                        title="Bookmark this course" style="position: static;">
+                        🏷️
+                    </button>
+                </div>
                 <h1 id="courseTitle"></h1>
                 <p class="course-hero-description" id="courseDescription"></p>
                 <div class="course-stats" id="courseStats">
@@ -372,6 +379,10 @@
             <div class="course-nav-item" onclick="scrollToSection('resourcesSection')">
                 <div class="course-nav-icon" style="background: var(--accent-cyan);">📦</div>
                 <span>Resources</span>
+            </div>
+            <div class="course-nav-item" onclick="scrollToSection('ratingSection')">
+                <div class="course-nav-icon" style="background: var(--accent-yellow);">⭐</div>
+                <span>Rate Course</span>
             </div>
         </aside>
 
@@ -411,6 +422,57 @@
                         <div class="empty-state-icon">📂</div>
                         <h3>No Resources Yet</h3>
                         <p>Textbooks, PPTs, flashcards, and other resources will be added soon.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Rating Section -->
+            <section class="content-section" id="ratingSection">
+                <div class="content-section-header">
+                    <div class="content-section-icon" style="background: var(--accent-yellow);">⭐</div>
+                    <h2 class="content-section-title">Rate This Course</h2>
+                </div>
+                <div class="content-section-body">
+                    <div class="rating-card">
+                        <div class="rating-card-header">
+                            <div class="rating-card-title">🌟 Course Rating</div>
+                        </div>
+                        <div class="rating-summary">
+                            <div class="rating-big-number" id="courseRatingAvg">0.0</div>
+                            <div>
+                                <div class="star-display" id="courseRatingStars">
+                                    <span class="star empty">☆</span>
+                                    <span class="star empty">☆</span>
+                                    <span class="star empty">☆</span>
+                                    <span class="star empty">☆</span>
+                                    <span class="star empty">☆</span>
+                                </div>
+                                <div class="rating-count" id="courseRatingCount">(0 ratings)</div>
+                            </div>
+                        </div>
+                        <div class="rating-form">
+                            <p class="rating-form-label" id="ratingFormLabel">How would you rate this course?</p>
+                            <div class="star-rating-input" id="starRatingInput">
+                                <input type="radio" name="rating" id="star5" value="5" onclick="setRating(5)">
+                                <label for="star5" title="Excellent">★</label>
+                                <input type="radio" name="rating" id="star4" value="4" onclick="setRating(4)">
+                                <label for="star4" title="Very Good">★</label>
+                                <input type="radio" name="rating" id="star3" value="3" onclick="setRating(3)">
+                                <label for="star3" title="Good">★</label>
+                                <input type="radio" name="rating" id="star2" value="2" onclick="setRating(2)">
+                                <label for="star2" title="Fair">★</label>
+                                <input type="radio" name="rating" id="star1" value="1" onclick="setRating(1)">
+                                <label for="star1" title="Poor">★</label>
+                            </div>
+                            <button class="btn btn-primary rating-submit-btn" id="submitRatingBtn"
+                                onclick="submitCourseRating()" disabled>
+                                Submit Rating
+                            </button>
+                            <p id="ratingSuccessMsg"
+                                style="display: none; color: var(--accent-green); font-family: var(--font-mono); margin-top: var(--space-sm);">
+                                ✅ Thank you for your rating!
+                            </p>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -456,6 +518,10 @@
     <script src="firebase-config.js"></script>
     <script src="app.js"></script>
     <script>
+        // State for ratings
+        let selectedRating = 0;
+        let currentCourseId = null;
+
         // Scroll to section helper
         function scrollToSection(sectionId) {
             const section = document.getElementById(sectionId);
@@ -475,6 +541,8 @@
                 return;
             }
 
+            currentCourseId = courseId;
+
             const course = await getCourseByIdAsync(courseId);
             if (!course) {
                 window.location.href = 'index.html';
@@ -484,8 +552,132 @@
             document.getElementById('loadingState').style.display = 'none';
             document.getElementById('courseHero').style.display = 'block';
             document.getElementById('courseLayout').style.display = 'grid';
+
             renderCourse(course);
+
+            // Load ratings
+            loadCourseRatings(courseId);
+
+            // Check existing user rating
+            loadUserRating(courseId);
+
+            // Set up bookmark button
+            updateBookmarkButton(courseId);
         });
+
+        // Bookmark handling
+        function updateBookmarkButton(courseId) {
+            const btn = document.getElementById('heroBookmarkBtn');
+            const bookmarked = isBookmarked(courseId);
+            btn.classList.toggle('active', bookmarked);
+            btn.textContent = bookmarked ? '🔖' : '🏷️';
+            btn.title = bookmarked ? 'Remove bookmark' : 'Bookmark this course';
+        }
+
+        function handleHeroBookmark() {
+            const isNowBookmarked = toggleBookmark(currentCourseId);
+            updateBookmarkButton(currentCourseId);
+            showToast(isNowBookmarked ? 'Course bookmarked!' : 'Bookmark removed', 'success');
+        }
+
+        function showToast(message, type = '') {
+            // Create toast if it doesn't exist
+            let toast = document.getElementById('toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'toast';
+                toast.className = 'toast';
+                document.body.appendChild(toast);
+            }
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Rating functions
+        async function loadCourseRatings(courseId) {
+            try {
+                const ratingData = await getCourseAverageRatingAsync(courseId);
+                updateRatingDisplay(ratingData.average, ratingData.count);
+            } catch (error) {
+                console.error('Error loading ratings:', error);
+            }
+        }
+
+        async function loadUserRating(courseId) {
+            try {
+                const visitorId = getVisitorId();
+                const existingRating = await getUserRatingAsync(courseId, visitorId);
+
+                if (existingRating) {
+                    selectedRating = existingRating.rating;
+                    document.getElementById('star' + existingRating.rating).checked = true;
+                    document.getElementById('submitRatingBtn').disabled = false;
+                    document.getElementById('ratingFormLabel').textContent = `Your rating: ${existingRating.rating} stars. Update it?`;
+                }
+            } catch (error) {
+                console.error('Error loading user rating:', error);
+            }
+        }
+
+        function updateRatingDisplay(average, count) {
+            document.getElementById('courseRatingAvg').textContent = average.toFixed(1);
+            document.getElementById('courseRatingCount').textContent = `(${count} rating${count !== 1 ? 's' : ''})`;
+
+            // Update stars
+            const starsContainer = document.getElementById('courseRatingStars');
+            let starsHtml = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= Math.floor(average)) {
+                    starsHtml += '<span class="star">★</span>';
+                } else if (i - 0.5 <= average) {
+                    starsHtml += '<span class="star half">☆</span>';
+                } else {
+                    starsHtml += '<span class="star empty">☆</span>';
+                }
+            }
+            starsContainer.innerHTML = starsHtml;
+        }
+
+        function setRating(rating) {
+            selectedRating = rating;
+            document.getElementById('submitRatingBtn').disabled = false;
+        }
+
+        async function submitCourseRating() {
+            if (selectedRating === 0) {
+                showToast('Please select a rating', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('submitRatingBtn');
+            btn.disabled = true;
+            btn.textContent = 'Submitting...';
+
+            try {
+                const result = await submitRatingAsync(currentCourseId, selectedRating);
+
+                if (result) {
+                    document.getElementById('ratingSuccessMsg').style.display = 'block';
+                    document.getElementById('ratingFormLabel').textContent = `Your rating: ${selectedRating} stars. Thank you!`;
+                    btn.textContent = 'Rating Submitted';
+
+                    // Reload ratings to show updated average
+                    await loadCourseRatings(currentCourseId);
+
+                    showToast(result.updated ? 'Rating updated!' : 'Thanks for rating!', 'success');
+                } else {
+                    btn.textContent = 'Submit Rating';
+                    btn.disabled = false;
+                    showToast('Error submitting rating', 'error');
+                }
+            } catch (error) {
+                console.error('Error submitting rating:', error);
+                btn.textContent = 'Submit Rating';
+                btn.disabled = false;
+                showToast('Error submitting rating', 'error');
+            }
+        }
 
         function renderCourse(course) {
             // Update page title
